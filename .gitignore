@@ -1,0 +1,9 @@
+node_modules/
+artifacts/
+cache/
+coverage/
+fhevmTemp/
+.env
+dist/
+frontend/dist/
+frontend/node_modules/
