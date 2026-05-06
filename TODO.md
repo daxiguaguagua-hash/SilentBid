@@ -5,11 +5,16 @@
 [*] 前端 — React + FHEVM SDK
 [*] Sepolia 部署
 [*] aipm AI 环境初始化
-[*] 前端单元测试 — 5 tests (vitest + RTL, 5/5)
+[*] 前端单元测试 — 7 tests (vitest + RTL, 7/7)
 [ ] E2E 测试 — localhost + MetaMask/或 mock wallet 出价流程
 [*] 修复 Bid 成功后 Bids 未自动刷新
-[*] 修复 encrypted bid 的 relayer/public key 初始化（换 V2 endpoint）
-[ ] README.md — 技术架构说明
+[*] 修复 encrypted bid 的 SDK 初始化顺序（initSDK -> createInstance）
+[*] 浏览器复测 encrypted bid（Chrome + MetaMask + Sepolia）
+[*] README.md — 技术架构说明
+[*] WORKFLOW.md — 项目工作流与验证规范
+[*] ROADMAP.md — 提交前规划
+[*] DEMO_SCRIPT.md — 2分钟真人演示讲稿
+[*] SUBMISSION.md — 提交材料清单
 [ ] 2分钟视频 — 真人出镜
 [ ] Google Form 提交
 [*] 前端 Bid 输入框加 "BID Credits" 单位

@@ -2,107 +2,153 @@
 
 Privacy-preserving sealed-bid auction on Zama FHEVM.
 
-> Built for the Zama Bounty Hackathon — deadline May 10, 2025 23:59 AOE.
+SilentBid is a working dApp demo where users submit encrypted bids from the browser. The contract accepts encrypted inputs and updates auction state without exposing plaintext bid amounts on-chain.
 
-## Problem
+## Why
 
-On a normal blockchain, all bids are public. Later bidders can see existing bids and outbid others by 1 wei. SilentBid solves this: every bid is encrypted before it reaches the contract, and the contract compares bids *while they remain encrypted*.
+In a normal blockchain auction, every bid is public. Later bidders can inspect the chain and outbid previous participants by a tiny amount.
 
-## How it works
+SilentBid demonstrates how FHE can improve this pattern:
 
+```mermaid
+flowchart LR
+  A["Bidder enters bid"] --> B["Browser encrypts bid"]
+  B --> C["Sepolia contract receives ciphertext"]
+  C --> D["Contract compares encrypted values"]
+  D --> E["Auction state updates"]
+  E --> F["Plaintext bid stays private"]
 ```
-Bidder → encrypts bid in browser (Zama SDK) → submits to contract
-Contract → FHE.gt(encryptedBid, highestBid) → FHE.select updates winner
-Auction ends → relayer decrypts → only the winner is revealed
-```
 
-The core logic uses Zama's FHEVM primitives:
+## What Works Now
 
-- `FHE.gt(a, b)` — compare two encrypted uint32 values, returns an encrypted boolean
-- `FHE.select(condition, ifTrue, ifFalse)` — encrypted conditional assignment, no plaintext branches
+| Capability | Status |
+|---|---|
+| Sepolia deployment | Done |
+| MetaMask connection | Done |
+| Trivial bid transaction | Done |
+| Encrypted bid transaction | Done |
+| FHEVM SDK initialization | Done |
+| Bid count refresh after tx | Done |
+| Contract tests | 10 passing |
+| Frontend checks/tests | 7 passing |
 
-This means the contract **never sees the actual bid values** — it only ever handles ciphertexts.
+## Contract
 
-## Tech stack
+| Network | Address |
+|---|---|
+| Sepolia | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
+
+[View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xAB06CB9cddC96B4c8725F3298548e56CbC10994d)
+
+Verified browser transactions:
+
+| Flow | Tx |
+|---|---|
+| Trivial bid | `0x6ebbe500dac2e408da2d0c...` |
+| Encrypted bid | `0xfc54da826c251e17fc6ac6...` |
+
+## Tech Stack
 
 | Layer | Choice |
 |---|---|
-| Smart contract | Solidity 0.8.24 + Zama FHEVM |
-| Dev framework | Hardhat + @fhevm/hardhat-plugin |
-| Frontend | React + wagmi + @zama-fhe/relayer-sdk |
-| Network | Sepolia testnet (Zama FHEVM) |
+| Contract | Solidity 0.8.24, Zama FHEVM |
+| Framework | Hardhat |
+| Frontend | React, Vite |
+| Wallet/Web3 | MetaMask, wagmi, viem |
+| FHE client | `@zama-fhe/relayer-sdk` |
+| Network | Sepolia |
 
-## Contract address (Sepolia)
+## Core FHE Flow
 
-`0xAB06CB9cddC96B4c8725F3298548e56CbC10994d`
+The encrypted bid flow is:
 
-[View on Sepolia Explorer](https://sepolia.etherscan.io/address/0xAB06CB9cddC96B4c8725F3298548e56CbC10994d)
+1. User enters a bid amount in BID Credits.
+2. Frontend calls `initSDK()` and creates a Zama relayer SDK instance.
+3. Frontend creates encrypted input for the auction contract and user address.
+4. SDK returns encrypted handles and input proof.
+5. Frontend converts SDK `Uint8Array` values to `0x...` hex for wagmi/viem.
+6. MetaMask submits the transaction to Sepolia.
+7. Contract accepts the encrypted bid and emits `BidSubmitted`.
+8. Frontend refetches contract state and updates `Bids`.
 
-## Quick start
+## Quick Start
 
-### Prerequisites
-
-- Node.js >= 20
-- MetaMask with Sepolia ETH
-
-### Install & deploy
+Install dependencies:
 
 ```bash
-# Install dependencies
 npm install
-cd frontend && npm install && cd ..
+cd frontend && npm install
+```
 
-# Copy and fill in environment variables
-cp .env.example .env
-# Edit .env: add PRIVATE_KEY and SEPOLIA_RPC_URL
+Create `frontend/.env`:
 
-# Deploy to Sepolia
-npx hardhat run scripts/deploy.ts --network sepolia
+```bash
+VITE_CONTRACT_ADDRESS=0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
+```
 
-# Start frontend
+Run the frontend:
+
+```bash
 cd frontend
-echo "VITE_CONTRACT_ADDRESS=<deployed-address>" > .env
 npm run dev
 ```
 
-### Local development
+Open:
 
-```bash
-# Terminal 1: local FHEVM node
-npx hardhat node
-
-# Terminal 2: deploy
-npx hardhat run scripts/deploy.ts --network localhost
-
-# Terminal 3: frontend
-cd frontend && npm run dev
+```text
+http://localhost:5173/
 ```
+
+Use MetaMask on Sepolia.
 
 ## Testing
 
-```bash
-# Contract tests (10 passing)
-npx hardhat test
+Contract tests:
 
-# Frontend tests (5 passing)
-cd frontend && npm test
+```bash
+npm test
 ```
 
-## Demo flow
+Frontend typecheck, production build, and unit tests:
 
-1. Connect MetaMask (Sepolia network)
-2. Enter a bid amount in BID Credits
-3. Click **Bid (encrypted)** — the SDK encrypts your bid client-side
-4. MetaMask confirms the transaction
-5. The contract processes your encrypted bid without decrypting it
-6. After the auction ends, only the winning bidder is revealed
+```bash
+cd frontend
+npm run test
+```
 
-## Why this matters
+Expected results:
 
-Fully Homomorphic Encryption (FHE) allows computation on encrypted data. SilentBid demonstrates this in a real-world scenario: a fair auction where bids stay private, yet the smart contract can still determine the winner — all on-chain, all verifiable.
+| Check | Expected |
+|---|---|
+| Hardhat | 10 passing |
+| Frontend | typecheck + build + 7 tests passing |
 
-## Built with
+Note: the encrypted browser demo is verified on Sepolia with Zama's hosted relayer. A local Hardhat JSON-RPC endpoint is not a Zama relayer.
 
-- [Zama FHEVM](https://github.com/zama-ai/fhevm)
-- [@zama-fhe/relayer-sdk](https://www.npmjs.com/package/@zama-fhe/relayer-sdk)
-- [wagmi](https://wagmi.sh)
+## Demo Flow
+
+1. Open `http://localhost:5173/`.
+2. Connect MetaMask on Sepolia.
+3. Wait for `FHEVM ready`.
+4. Enter `100` BID Credits.
+5. Click `Bid (encrypted)`.
+6. Confirm in MetaMask.
+7. Verify that `Bids` increments after confirmation.
+
+## Project Documents
+
+| File | Purpose |
+|---|---|
+| [WORKFLOW.md](WORKFLOW.md) | Agent workflow, smoke test, known pitfalls, done criteria |
+| [TESTING.md](TESTING.md) | Test matrix and verified browser facts |
+| [ROADMAP.md](ROADMAP.md) | Submission roadmap and next priorities |
+| [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | 2-minute video narration and recording checklist |
+| [SUBMISSION.md](SUBMISSION.md) | Copy-ready submission facts and final checklist |
+| [STATUS.md](STATUS.md) | Chronological progress log |
+| [TODO.md](TODO.md) | Remaining tasks |
+
+## Why This Matters
+
+SilentBid shows a concrete privacy use case for FHE on-chain. The bid remains encrypted, the contract can still process it, and the user can verify the transaction through a normal wallet and block explorer.
+
+This is the main value of Zama FHEVM: private inputs with programmable on-chain logic.

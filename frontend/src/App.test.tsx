@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { hardhat } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App";
+import App, { parseBidAmount } from "./App";
 
 const mockEthereum = {
   request: vi.fn().mockResolvedValue("0x7a69"),
@@ -57,5 +57,20 @@ describe("App — disconnected state", () => {
   it("does not show End Auction button when disconnected", () => {
     renderApp();
     expect(screen.queryByText("End Auction")).not.toBeInTheDocument();
+  });
+});
+
+describe("parseBidAmount", () => {
+  it("accepts whole BID Credit amounts in uint32 range", () => {
+    expect(parseBidAmount("100")).toBe(100);
+    expect(parseBidAmount("4294967295")).toBe(4294967295);
+  });
+
+  it("rejects empty, fractional, negative, zero, and overflowing values", () => {
+    expect(parseBidAmount("")).toBeNull();
+    expect(parseBidAmount("1.5")).toBeNull();
+    expect(parseBidAmount("-1")).toBeNull();
+    expect(parseBidAmount("0")).toBeNull();
+    expect(parseBidAmount("4294967296")).toBeNull();
   });
 });

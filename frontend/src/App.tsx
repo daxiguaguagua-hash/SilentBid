@@ -4,51 +4,36 @@ import {
   useWriteContract, useReadContract, useWatchContractEvent,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { useQueryClient } from "@tanstack/react-query";
 import { injected } from "wagmi/connectors";
-import { createInstance, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
+import { toHex } from "viem";
+import { createInstance, initSDK, SepoliaConfigV2, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
 import ABI from "./SilentBid.abi.json";
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "") as `0x${string}`;
+const UINT32_MAX = 2 ** 32 - 1;
 
-// Zama FHEVM contract addresses by network
+// Zama-hosted FHEVM relayer config by network.
 const FHEVM_CONFIG = {
-  31337: { // Hardhat local
-    aclContractAddress: "0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D",
-    kmsContractAddress: "0x901F8942346f7AB3a01F6D7613119Bca447Bb030",
-    inputVerifierContractAddress: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
-    verifyingContractAddressDecryption: "0x901F8942346f7AB3a01F6D7613119Bca447Bb030",
-    verifyingContractAddressInputVerification: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
-    relayerUrl: "http://localhost:8545",
-    gatewayChainId: 31337,
-  },
-  11155111: { // Sepolia
-    aclContractAddress: "0xf0Ffdc93b7E186bC2f8CB3dAA75D86d1930A433D",
-    kmsContractAddress: "0xbE0E383937d564D7FF0BC3b46c51f0bF8d5C311A",
-    inputVerifierContractAddress: "0xBBC1fFCdc7C316aAAd72E807D9b0272BE8F84DA0",
-    verifyingContractAddressDecryption: "0x5D8BD78e2ea6bbE41f26dFe9fdaEAa349e077478",
-    verifyingContractAddressInputVerification: "0x483b9dE06E4E4C7D35CCf5837A1668487406D955",
-    relayerUrl: "https://relayer.testnet.zama.org/v2",
-    gatewayChainId: 10901,
-  },
+  11155111: SepoliaConfigV2,
 };
+
+export function parseBidAmount(value: string): number | null {
+  if (!/^\d+$/.test(value.trim())) return null;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > UINT32_MAX) return null;
+  return parsed;
+}
 
 export default function App() {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
-  const { writeContract, data: txHash, isPending } = useWriteContract();
-  const queryClient = useQueryClient();
+  const { writeContractAsync, data: txHash, isPending } = useWriteContract();
 
   // Refetch contract state after transaction confirms
   const { isSuccess: txConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,
   });
-  useEffect(() => {
-    if (txConfirmed) {
-      queryClient.invalidateQueries({ queryKey: [{ address: CONTRACT_ADDRESS }] });
-    }
-  }, [txConfirmed, queryClient]);
 
   const [bidAmount, setBidAmount] = useState("100");
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
@@ -56,16 +41,16 @@ export default function App() {
   const [events, setEvents] = useState<string[]>([]);
 
   // Read contract state
-  const { data: bidCount } = useReadContract({
+  const { data: bidCount, refetch: refetchBidCount } = useReadContract({
     address: CONTRACT_ADDRESS, abi: ABI, functionName: "bidCount",
   });
-  const { data: ended } = useReadContract({
+  const { data: ended, refetch: refetchEnded } = useReadContract({
     address: CONTRACT_ADDRESS, abi: ABI, functionName: "ended",
   });
-  const { data: owner } = useReadContract({
+  const { data: owner, refetch: refetchOwner } = useReadContract({
     address: CONTRACT_ADDRESS, abi: ABI, functionName: "owner",
   });
-  const { data: isActive } = useReadContract({
+  const { data: isActive, refetch: refetchIsActive } = useReadContract({
     address: CONTRACT_ADDRESS, abi: ABI, functionName: "isActive",
   });
 
@@ -74,6 +59,18 @@ export default function App() {
   const isActiveValue = Boolean(isActive);
   const ownerAddress = typeof owner === "string" ? owner : undefined;
   const isOwner = Boolean(address && ownerAddress && address.toLowerCase() === ownerAddress.toLowerCase());
+  const parsedBidAmount = parseBidAmount(bidAmount);
+  const isBidAmountValid = parsedBidAmount !== null;
+
+  useEffect(() => {
+    if (!txConfirmed) return;
+    void Promise.all([
+      refetchBidCount(),
+      refetchEnded(),
+      refetchOwner(),
+      refetchIsActive(),
+    ]);
+  }, [txConfirmed, refetchBidCount, refetchEnded, refetchOwner, refetchIsActive]);
 
   // Watch BidSubmitted events
   useWatchContractEvent({
@@ -103,8 +100,10 @@ export default function App() {
         const cfg = FHEVM_CONFIG[numericChainId as keyof typeof FHEVM_CONFIG];
         if (!cfg) { setStatus(`Unsupported chain ${numericChainId}`); return; }
 
+        setStatus("Loading FHEVM SDK...");
+        await initSDK();
+
         const inst = await createInstance({
-          chainId: numericChainId,
           network: window.ethereum,
           ...cfg,
         });
@@ -118,44 +117,58 @@ export default function App() {
 
   // Submit encrypted bid
   const handleBid = async () => {
-    if (!instance || !address) return;
+    if (!instance || !address || parsedBidAmount === null) return;
     try {
       setStatus("Encrypting bid...");
       const input = instance.createEncryptedInput(CONTRACT_ADDRESS, address);
-      input.add32(Number(bidAmount));
+      input.add32(parsedBidAmount);
       const { handles, inputProof } = await input.encrypt();
+      const encryptedBidHandle = toHex(handles[0]);
+      const inputProofHex = toHex(inputProof);
 
-      setStatus("Submitting bid...");
-      writeContract({
+      setStatus("Waiting for wallet confirmation...");
+      const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: ABI,
         functionName: "bid",
-        args: [handles[0], inputProof],
+        args: [encryptedBidHandle, inputProofHex],
       });
+      setStatus(`Encrypted bid submitted: ${hash.slice(0, 10)}...`);
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);
     }
   };
 
   // Trivial bid (local testing)
-  const handleBidTrivial = () => {
-    writeContract({
-      address: CONTRACT_ADDRESS,
-      abi: ABI,
-      functionName: "bidTrivial",
-      args: [Number(bidAmount)],
-    });
-    setStatus("Trivial bid submitted");
+  const handleBidTrivial = async () => {
+    if (parsedBidAmount === null) return;
+    try {
+      setStatus("Waiting for wallet confirmation...");
+      const hash = await writeContractAsync({
+        address: CONTRACT_ADDRESS,
+        abi: ABI,
+        functionName: "bidTrivial",
+        args: [parsedBidAmount],
+      });
+      setStatus(`Trivial bid submitted: ${hash.slice(0, 10)}...`);
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
   };
 
   // End auction
-  const handleEndAuction = () => {
-    writeContract({
-      address: CONTRACT_ADDRESS,
-      abi: ABI,
-      functionName: "endAuction",
-    });
-    setStatus("Ending auction...");
+  const handleEndAuction = async () => {
+    try {
+      setStatus("Waiting for wallet confirmation...");
+      const hash = await writeContractAsync({
+        address: CONTRACT_ADDRESS,
+        abi: ABI,
+        functionName: "endAuction",
+      });
+      setStatus(`End auction submitted: ${hash.slice(0, 10)}...`);
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
   };
 
   return (
@@ -190,16 +203,24 @@ export default function App() {
                 Bid amount (BID Credits):{" "}
                 <input
                   type="number"
+                  min="1"
+                  max={UINT32_MAX}
+                  step="1"
                   value={bidAmount}
                   onChange={(e) => setBidAmount(e.target.value)}
                   style={{ width: 100, padding: 6 }}
                 />
               </label>
+              {!isBidAmountValid && (
+                <div style={{ color: "#c44", fontSize: 12, marginTop: 6 }}>
+                  Bid must be a whole number from 1 to {UINT32_MAX} BID Credits.
+                </div>
+              )}
               <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                <button onClick={handleBidTrivial} disabled={isPending} style={btnStyle}>
+                <button onClick={handleBidTrivial} disabled={isPending || !isBidAmountValid} style={btnStyle}>
                   Bid (trivial)
                 </button>
-                <button onClick={handleBid} disabled={isPending || !instance} style={btnStyle}>
+                <button onClick={handleBid} disabled={isPending || !instance || !isBidAmountValid} style={btnStyle}>
                   Bid (encrypted)
                 </button>
               </div>

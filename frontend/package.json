@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "test": "vitest run"
+    "test": "npm run typecheck && npm run build && vitest run"
   },
   "keywords": [],
   "author": "",
