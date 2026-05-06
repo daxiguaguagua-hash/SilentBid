@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { useAccount, useConnect, useDisconnect, useWriteContract, useReadContract } from "wagmi";
+import {
+  useAccount, useConnect, useDisconnect,
+  useWriteContract, useReadContract, useWatchContractEvent,
+} from "wagmi";
 import { injected } from "wagmi/connectors";
 import { createInstance, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
-import ABI from "./EncryptedCounter.abi.json";
+import { parseAbiItem } from "viem";
+import ABI from "./SilentBid.abi.json";
 
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "";
-// Local Zama config addresses (chainId 31337)
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "") as `0x${string}`;
 const LOCAL_ACL = "0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D";
 const LOCAL_KMS = "0x901F8942346f7AB3a01F6D7613119Bca447Bb030";
-const LOCAL_INPUT_VERIFIER = "0xe3a9105a3a932253A70F126eb1E3b589C643dD24";
-const LOCAL_RELAYER_URL = "http://localhost:8545";
 
 export default function App() {
   const { address, isConnected } = useAccount();
@@ -17,155 +18,170 @@ export default function App() {
   const { disconnect } = useDisconnect();
   const { writeContract, data: txHash, isPending } = useWriteContract();
 
-  const [plainValue, setPlainValue] = useState("42");
+  const [bidAmount, setBidAmount] = useState("100");
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
   const [status, setStatus] = useState("");
-  const [decryptedValue, setDecryptedValue] = useState<number | null>(null);
+  const [events, setEvents] = useState<string[]>([]);
 
-  // Read current value
-  const { data: handle } = useReadContract({
-    address: CONTRACT_ADDRESS as `0x${string}`,
-    abi: ABI,
-    functionName: "getValue",
+  // Read contract state
+  const { data: bidCount } = useReadContract({
+    address: CONTRACT_ADDRESS, abi: ABI, functionName: "bidCount",
+  });
+  const { data: ended } = useReadContract({
+    address: CONTRACT_ADDRESS, abi: ABI, functionName: "ended",
+  });
+  const { data: owner } = useReadContract({
+    address: CONTRACT_ADDRESS, abi: ABI, functionName: "owner",
+  });
+  const { data: isActive } = useReadContract({
+    address: CONTRACT_ADDRESS, abi: ABI, functionName: "isActive",
   });
 
-  // Initialize FHEVM instance
+  const isOwner = address && owner && address.toLowerCase() === (owner as string).toLowerCase();
+
+  // Watch BidSubmitted events
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    eventName: "BidSubmitted",
+    onLogs(logs) {
+      for (const log of logs) {
+        const bidder = (log as any).args?.bidder || "unknown";
+        setEvents((prev) => [...prev, `Bid from ${bidder.slice(0, 8)}...`].slice(-10));
+      }
+    },
+  });
+
+  // Init FHEVM
   useEffect(() => {
     if (!isConnected || !address) return;
-    const init = async () => {
+    (async () => {
       try {
         const inst = await createInstance({
           chainId: 31337,
           network: window.ethereum,
           aclContractAddress: LOCAL_ACL,
           kmsContractAddress: LOCAL_KMS,
-          inputVerifierContractAddress: LOCAL_INPUT_VERIFIER,
+          inputVerifierContractAddress: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
           verifyingContractAddressDecryption: LOCAL_KMS,
-          verifyingContractAddressInputVerification: LOCAL_INPUT_VERIFIER,
-          relayerUrl: LOCAL_RELAYER_URL,
+          verifyingContractAddressInputVerification: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
+          relayerUrl: "http://localhost:8545",
           gatewayChainId: 31337,
         });
         setInstance(inst);
-        setStatus("FHEVM instance ready");
+        setStatus("FHEVM ready");
       } catch (err: any) {
-        setStatus(`FHEVM init failed: ${err.message}`);
+        setStatus(`FHEVM: ${err.message}`);
       }
-    };
-    init();
+    })();
   }, [isConnected, address]);
 
-  // Submit encrypted value
-  const handleSubmitEncrypted = async () => {
-    if (!instance || !address || !CONTRACT_ADDRESS) return;
+  // Submit encrypted bid
+  const handleBid = async () => {
+    if (!instance || !address) return;
     try {
-      setStatus("Encrypting...");
-
-      // Step 1: Create encrypted input
+      setStatus("Encrypting bid...");
       const input = instance.createEncryptedInput(CONTRACT_ADDRESS, address);
-      input.add32(Number(plainValue));
-
-      // Step 2: Encrypt
+      input.add32(Number(bidAmount));
       const { handles, inputProof } = await input.encrypt();
-      setStatus("Encrypted. Submitting to contract...");
 
-      // Step 3: Submit to contract
+      setStatus("Submitting bid...");
       writeContract({
-        address: CONTRACT_ADDRESS as `0x${string}`,
+        address: CONTRACT_ADDRESS,
         abi: ABI,
-        functionName: "setValue",
+        functionName: "bid",
         args: [handles[0], inputProof],
       });
-
-      setStatus("Transaction submitted!");
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);
     }
   };
 
-  // Submit trivial (for local test without relayer)
-  const handleSubmitTrivial = () => {
+  // Trivial bid (local testing)
+  const handleBidTrivial = () => {
     writeContract({
-      address: CONTRACT_ADDRESS as `0x${string}`,
+      address: CONTRACT_ADDRESS,
       abi: ABI,
-      functionName: "setValueTrivial",
-      args: [Number(plainValue)],
+      functionName: "bidTrivial",
+      args: [Number(bidAmount)],
     });
-    setStatus("Trivial encrypt tx submitted...");
+    setStatus("Trivial bid submitted");
   };
 
-  // Allow decryption
-  const handleAllowDecryption = () => {
+  // End auction
+  const handleEndAuction = () => {
     writeContract({
-      address: CONTRACT_ADDRESS as `0x${string}`,
+      address: CONTRACT_ADDRESS,
       abi: ABI,
-      functionName: "allowValueDecryption",
+      functionName: "endAuction",
     });
-    setStatus("Allowing decryption...");
-  };
-
-  // Decrypt using relayer
-  const handleDecrypt = async () => {
-    if (!instance || !handle) return;
-    try {
-      setStatus("Decrypting via relayer...");
-      const results = await instance.publicDecrypt([handle.toString()]);
-      if (results && results.length > 0) {
-        setDecryptedValue(Number(results[0]));
-        setStatus("Decrypted!");
-      }
-    } catch (err: any) {
-      setStatus(`Decrypt error: ${err.message}`);
-    }
+    setStatus("Ending auction...");
   };
 
   return (
-    <div style={{ fontFamily: "monospace", maxWidth: 600, margin: "40px auto", padding: 20 }}>
-      <h1>🔐 SilentBid — Day 1 E2E Spike</h1>
-      <p>EncryptedCounter: browser → encrypt → contract → decrypt → display</p>
+    <div style={{ fontFamily: "monospace", maxWidth: 650, margin: "30px auto", padding: 20 }}>
+      <h1>🤫 SilentBid</h1>
+      <p>Privacy-preserving sealed-bid auction on Zama FHEVM</p>
 
       {!isConnected ? (
-        <button onClick={() => connect({ connector: injected() })}>
+        <button onClick={() => connect({ connector: injected() })} style={btnStyle}>
           Connect Wallet
         </button>
       ) : (
         <div>
-          <p>✅ Connected: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
-          <p>Status: {status}</p>
-          {instance && <p>🔧 FHEVM SDK loaded</p>}
+          <p>
+            👤 {address?.slice(0, 6)}...{address?.slice(-4)}
+            {isOwner && " (Owner)"}
+          </p>
 
-          <div style={{ margin: "20px 0" }}>
-            <label>
-              Value to encrypt:{" "}
-              <input
-                type="number"
-                value={plainValue}
-                onChange={(e) => setPlainValue(e.target.value)}
-                style={{ width: 100, padding: 4 }}
-              />
-            </label>
+          {/* Auction state */}
+          <div style={infoBox}>
+            <div>Status: {ended ? "🔒 Ended" : isActive ? "🔵 Active" : "⏳ Expired"}</div>
+            <div>Bids: {String(bidCount ?? 0)}</div>
+            {instance ? "🔧 FHEVM SDK loaded" : "⏳ Loading FHEVM..."}
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={handleSubmitTrivial} disabled={isPending || !CONTRACT_ADDRESS}>
-              Submit (trivial encrypt)
-            </button>
-            <button onClick={handleSubmitEncrypted} disabled={isPending || !instance || !CONTRACT_ADDRESS}>
-              Submit (FHE encrypt)
-            </button>
-            <button onClick={handleAllowDecryption} disabled={isPending || !CONTRACT_ADDRESS}>
-              Allow Decrypt
-            </button>
-            <button onClick={handleDecrypt} disabled={!instance || !handle}>
-              Decrypt via Relayer
-            </button>
-          </div>
+          <p style={{ color: "#888", fontSize: 12 }}>{status}</p>
 
-          {txHash && <p>TX: {txHash.slice(0, 20)}...</p>}
-          {handle && <p>Handle: {handle.toString().slice(0, 20)}...</p>}
-          {decryptedValue !== null && (
-            <p style={{ fontSize: 24, fontWeight: "bold" }}>
-              🔓 Decrypted value: {decryptedValue}
-            </p>
+          {/* Bid controls */}
+          {!ended && isActive && (
+            <div style={{ margin: "16px 0" }}>
+              <label>
+                Bid amount:{" "}
+                <input
+                  type="number"
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  style={{ width: 100, padding: 6 }}
+                />
+              </label>
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                <button onClick={handleBidTrivial} disabled={isPending} style={btnStyle}>
+                  Bid (trivial)
+                </button>
+                <button onClick={handleBid} disabled={isPending || !instance} style={btnStyle}>
+                  Bid (encrypted)
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Owner controls */}
+          {isOwner && !ended && (
+            <button onClick={handleEndAuction} disabled={isPending} style={{ ...btnStyle, background: "#c44" }}>
+              End Auction
+            </button>
+          )}
+
+          {/* TX feedback */}
+          {txHash && <p style={{ fontSize: 11 }}>TX: {txHash.slice(0, 24)}...</p>}
+
+          {/* Event log */}
+          {events.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <strong>Events:</strong>
+              {events.map((e, i) => <div key={i} style={{ fontSize: 12 }}>• {e}</div>)}
+            </div>
           )}
 
           <hr />
@@ -174,10 +190,18 @@ export default function App() {
       )}
 
       {!CONTRACT_ADDRESS && (
-        <p style={{ color: "orange" }}>
-          ⚠️ Set VITE_CONTRACT_ADDRESS env var with deployed contract address
-        </p>
+        <p style={{ color: "orange" }}>⚠️ Set VITE_CONTRACT_ADDRESS env var</p>
       )}
     </div>
   );
 }
+
+const btnStyle: React.CSSProperties = {
+  padding: "8px 16px", cursor: "pointer", fontSize: 14,
+  background: "#4a6", color: "#fff", border: "none", borderRadius: 4,
+};
+
+const infoBox: React.CSSProperties = {
+  background: "#1a1a2e", color: "#e0e0e0", padding: 12, borderRadius: 6,
+  marginTop: 12, lineHeight: 1.8,
+};
