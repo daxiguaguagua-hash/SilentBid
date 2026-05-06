@@ -7,8 +7,8 @@
 [*] aipm AI 环境初始化
 [*] 前端单元测试 — 5 tests (vitest + RTL, 5/5)
 [ ] E2E 测试 — localhost + MetaMask/或 mock wallet 出价流程
-[ ] 修复 Bid 成功后 Bids 未自动刷新
-[ ] 修复 encrypted bid 的 relayer/public key 初始化
+[*] 修复 Bid 成功后 Bids 未自动刷新
+[*] 修复 encrypted bid 的 relayer/public key 初始化（换 V2 endpoint）
 [ ] README.md — 技术架构说明
 [ ] 2分钟视频 — 真人出镜
 [ ] Google Form 提交
