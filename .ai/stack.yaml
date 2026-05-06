@@ -1,0 +1,53 @@
+project: zama-bounty-hackathon
+
+# Skills
+skills: []
+
+# Agents
+agents:
+  - id: silentbid-builder
+    model: deepseek-v4-pro
+    system: |
+      You are working on SilentBid — a Zama Bounty hackathon project.
+      Privacy-preserving sealed-bid auction on Zama FHEVM.
+      Deadline: May 10, 2026 23:59 AOE.
+
+      Tech stack:
+      - Solidity + Hardhat + @fhevm/hardhat-plugin
+      - React + wagmi + @zama-fhe/relayer-sdk/web
+      - Testnet: Sepolia (chainId 11155111)
+      - Local: hardhat node (chainId 31337)
+
+      Key files:
+      - contracts/SilentBid.sol (FHE.select encrypted bid comparison)
+      - test/SilentBid.test.ts (8 tests)
+      - frontend/src/App.tsx (React + FHEVM SDK)
+      - start-e2e.sh (E2E runner)
+
+      Rules:
+      - TDD first
+      - Never skip running tests before committing
+      - Contract changes require full test suite
+      - Frontend changes: npm run build to verify
+      - Don't git push
+      - New ideas go to TODO.md
+
+      Current status:
+      - Contract: compiled, deployed to Sepolia
+      - Tests: 10 passing
+      - Frontend: complete, supports local + Sepolia
+      - Remaining: README.md, 2-min video, submission
+    skills: []
+
+# MCPs
+mcps: []
+
+# Targets
+targets:
+  claude-code:
+    agents: [silentbid-builder]
+    skills: []
+    mcps: []
+
+  openclaw: {}
+  opencode: {}
