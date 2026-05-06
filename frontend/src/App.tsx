@@ -9,8 +9,28 @@ import { parseAbiItem } from "viem";
 import ABI from "./SilentBid.abi.json";
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "") as `0x${string}`;
-const LOCAL_ACL = "0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D";
-const LOCAL_KMS = "0x901F8942346f7AB3a01F6D7613119Bca447Bb030";
+
+// Zama FHEVM contract addresses by network
+const FHEVM_CONFIG = {
+  31337: { // Hardhat local
+    aclContractAddress: "0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D",
+    kmsContractAddress: "0x901F8942346f7AB3a01F6D7613119Bca447Bb030",
+    inputVerifierContractAddress: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
+    verifyingContractAddressDecryption: "0x901F8942346f7AB3a01F6D7613119Bca447Bb030",
+    verifyingContractAddressInputVerification: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
+    relayerUrl: "http://localhost:8545",
+    gatewayChainId: 31337,
+  },
+  11155111: { // Sepolia
+    aclContractAddress: "0xf0Ffdc93b7E186bC2f8CB3dAA75D86d1930A433D",
+    kmsContractAddress: "0xbE0E383937d564D7FF0BC3b46c51f0bF8d5C311A",
+    inputVerifierContractAddress: "0xBBC1fFCdc7C316aAAd72E807D9b0272BE8F84DA0",
+    verifyingContractAddressDecryption: "0x5D8BD78e2ea6bbE41f26dFe9fdaEAa349e077478",
+    verifyingContractAddressInputVerification: "0x483b9dE06E4E4C7D35CCf5837A1668487406D955",
+    relayerUrl: "https://relayer.testnet.zama.org",
+    gatewayChainId: 10901,
+  },
+};
 
 export default function App() {
   const { address, isConnected } = useAccount();
@@ -57,16 +77,15 @@ export default function App() {
     if (!isConnected || !address) return;
     (async () => {
       try {
+        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+        const numericChainId = parseInt(chainId, 16);
+        const cfg = FHEVM_CONFIG[numericChainId as keyof typeof FHEVM_CONFIG];
+        if (!cfg) { setStatus(`Unsupported chain ${numericChainId}`); return; }
+
         const inst = await createInstance({
-          chainId: 31337,
+          chainId: numericChainId,
           network: window.ethereum,
-          aclContractAddress: LOCAL_ACL,
-          kmsContractAddress: LOCAL_KMS,
-          inputVerifierContractAddress: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
-          verifyingContractAddressDecryption: LOCAL_KMS,
-          verifyingContractAddressInputVerification: "0xe3a9105a3a932253A70F126eb1E3b589C643dD24",
-          relayerUrl: "http://localhost:8545",
-          gatewayChainId: 31337,
+          ...cfg,
         });
         setInstance(inst);
         setStatus("FHEVM ready");

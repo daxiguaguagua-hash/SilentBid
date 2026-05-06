@@ -2,15 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { hardhat } from "wagmi/chains";
+import { hardhat, sepolia } from "wagmi/chains";
 import App from "./App";
 
 const queryClient = new QueryClient();
 
 const config = createConfig({
-  chains: [hardhat],
+  chains: [hardhat, sepolia],
   transports: {
     [hardhat.id]: http("http://localhost:8545"),
+    [sepolia.id]: http(import.meta.env.VITE_SEPOLIA_RPC || "https://sepolia.infura.io/v3/YOUR_KEY"),
   },
 });
 
