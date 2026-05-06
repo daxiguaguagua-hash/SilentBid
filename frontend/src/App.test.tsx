@@ -36,22 +36,22 @@ beforeEach(() => queryClient.clear());
 describe("App — disconnected state", () => {
   it("shows SilentBid heading", () => {
     renderApp();
-    expect(screen.getByText("🤫 SilentBid")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "SilentBid" })).toBeInTheDocument();
   });
 
   it("shows description", () => {
     renderApp();
-    expect(screen.getByText(/Privacy-preserving/)).toBeInTheDocument();
+    expect(screen.getByText(/Private bids/)).toBeInTheDocument();
   });
 
   it("shows Connect Wallet button", () => {
     renderApp();
-    expect(screen.getByText("Connect Wallet")).toBeInTheDocument();
+    expect(screen.getAllByText("Connect Wallet").length).toBeGreaterThan(0);
   });
 
   it("does not show bid input when disconnected", () => {
     renderApp();
-    expect(screen.queryByLabelText(/Bid amount/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Bid amount")).not.toBeInTheDocument();
   });
 
   it("does not show End Auction button when disconnected", () => {

@@ -15,6 +15,7 @@
 [*] ROADMAP.md — 提交前规划
 [*] DEMO_SCRIPT.md — 2分钟真人演示讲稿
 [*] SUBMISSION.md — 提交材料清单
+[*] UI polish — 密封竞价控制台、主按钮、开发测试区
 [ ] 2分钟视频 — 真人出镜
 [ ] Google Form 提交
 [*] 前端 Bid 输入框加 "BID Credits" 单位

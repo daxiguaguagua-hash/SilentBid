@@ -9,6 +9,13 @@
 - Rewrote `README.md` as the judge-facing entrypoint with project value, verified tx evidence, quick start, tests, demo flow, and document map.
 - Verified after docs pass: root `npm test` still 10 passing; frontend `npm run test` still typecheck/build/7 tests passing.
 
+## 2026-05-06 23:20 Codex UI polish
+- Reworked frontend into a sealed-auction console: status metrics, private bid panel, sealed-auction rules, on-chain evidence, and developer test controls.
+- Promoted encrypted flow to primary CTA: `Place Private Bid`.
+- Moved `Debug Plain Bid` and owner-only `End Auction` into a lower developer controls area.
+- Verified in Chrome: Sepolia wallet connected, `Auction: Active`, `Sealed bids: 7`, `FHEVM: Ready`.
+- Verified: root `npm test` 10 passing; frontend `npm run test` typecheck/build/7 tests passing.
+
 ## 2026-05-06 20:00 Hermes fixes
 - Bid auto-refresh: added useWaitForTransactionReceipt + invalidateQueries after tx confirms
 - Relayer: switched Sepolia to V2 endpoint (https://relayer.testnet.zama.org/v2)
