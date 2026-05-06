@@ -15,7 +15,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://sepolia.infura.io/v3/YOUR_INFURA_KEY",
+      url: "https://eth-sepolia.g.alchemy.com/v2/yUWc_wLg_TSq_8f09jOLg",
       accounts: [PRIVATE_KEY],
       chainId: 11155111,
     },
