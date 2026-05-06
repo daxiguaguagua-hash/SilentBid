@@ -5,7 +5,6 @@ import {
 } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { createInstance, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
-import { parseAbiItem } from "viem";
 import ABI from "./SilentBid.abi.json";
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "") as `0x${string}`;
@@ -57,7 +56,11 @@ export default function App() {
     address: CONTRACT_ADDRESS, abi: ABI, functionName: "isActive",
   });
 
-  const isOwner = address && owner && address.toLowerCase() === (owner as string).toLowerCase();
+  const bidCountLabel = String((bidCount as bigint | number | undefined) ?? 0);
+  const endedValue = Boolean(ended);
+  const isActiveValue = Boolean(isActive);
+  const ownerAddress = typeof owner === "string" ? owner : undefined;
+  const isOwner = Boolean(address && ownerAddress && address.toLowerCase() === ownerAddress.toLowerCase());
 
   // Watch BidSubmitted events
   useWatchContractEvent({
@@ -77,8 +80,13 @@ export default function App() {
     if (!isConnected || !address) return;
     (async () => {
       try {
+        if (!window.ethereum) {
+          setStatus("FHEVM: wallet provider unavailable");
+          return;
+        }
+
         const chainId = await window.ethereum.request({ method: "eth_chainId" });
-        const numericChainId = parseInt(chainId, 16);
+        const numericChainId = parseInt(String(chainId), 16);
         const cfg = FHEVM_CONFIG[numericChainId as keyof typeof FHEVM_CONFIG];
         if (!cfg) { setStatus(`Unsupported chain ${numericChainId}`); return; }
 
@@ -155,18 +163,18 @@ export default function App() {
 
           {/* Auction state */}
           <div style={infoBox}>
-            <div>Status: {ended ? "🔒 Ended" : isActive ? "🔵 Active" : "⏳ Expired"}</div>
-            <div>Bids: {String(bidCount ?? 0)}</div>
+            <div>Status: {endedValue ? "🔒 Ended" : isActiveValue ? "🔵 Active" : "⏳ Expired"}</div>
+            <div>Bids: {bidCountLabel}</div>
             {instance ? "🔧 FHEVM SDK loaded" : "⏳ Loading FHEVM..."}
           </div>
 
           <p style={{ color: "#888", fontSize: 12 }}>{status}</p>
 
           {/* Bid controls */}
-          {!ended && isActive && (
+          {!endedValue && isActiveValue && (
             <div style={{ margin: "16px 0" }}>
               <label>
-                Bid amount:{" "}
+                Bid amount (BID Credits):{" "}
                 <input
                   type="number"
                   value={bidAmount}
@@ -186,7 +194,7 @@ export default function App() {
           )}
 
           {/* Owner controls */}
-          {isOwner && !ended && (
+          {isOwner && !endedValue && (
             <button onClick={handleEndAuction} disabled={isPending} style={{ ...btnStyle, background: "#c44" }}>
               End Auction
             </button>

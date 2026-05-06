@@ -5,7 +5,11 @@
 [*] 前端 — React + FHEVM SDK
 [*] Sepolia 部署
 [*] aipm AI 环境初始化
+[ ] 前端单元测试 — 渲染 Active/Owner/Bids/tx 状态
+[ ] E2E 测试 — localhost + MetaMask/或 mock wallet 出价流程
+[ ] 修复 Bid 成功后 Bids 未自动刷新
+[ ] 修复 encrypted bid 的 relayer/public key 初始化
 [ ] README.md — 技术架构说明
 [ ] 2分钟视频 — 真人出镜
 [ ] Google Form 提交
-[ ] 前端 Bid 输入框加 "Credits" 单位（可选）
+[*] 前端 Bid 输入框加 "BID Credits" 单位
