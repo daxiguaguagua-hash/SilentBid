@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import {
   useAccount, useConnect, useDisconnect,
   useWriteContract, useReadContract, useWatchContractEvent,
+  useWaitForTransactionReceipt,
 } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 import { injected } from "wagmi/connectors";
 import { createInstance, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
 import ABI from "./SilentBid.abi.json";
@@ -26,7 +28,7 @@ const FHEVM_CONFIG = {
     inputVerifierContractAddress: "0xBBC1fFCdc7C316aAAd72E807D9b0272BE8F84DA0",
     verifyingContractAddressDecryption: "0x5D8BD78e2ea6bbE41f26dFe9fdaEAa349e077478",
     verifyingContractAddressInputVerification: "0x483b9dE06E4E4C7D35CCf5837A1668487406D955",
-    relayerUrl: "https://relayer.testnet.zama.org",
+    relayerUrl: "https://relayer.testnet.zama.org/v2",
     gatewayChainId: 10901,
   },
 };
@@ -36,6 +38,17 @@ export default function App() {
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { writeContract, data: txHash, isPending } = useWriteContract();
+  const queryClient = useQueryClient();
+
+  // Refetch contract state after transaction confirms
+  const { isSuccess: txConfirmed } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+  useEffect(() => {
+    if (txConfirmed) {
+      queryClient.invalidateQueries({ queryKey: [{ address: CONTRACT_ADDRESS }] });
+    }
+  }, [txConfirmed, queryClient]);
 
   const [bidAmount, setBidAmount] = useState("100");
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
