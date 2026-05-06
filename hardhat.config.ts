@@ -1,3 +1,4 @@
+import "dotenv/config";
 import "@fhevm/hardhat-plugin";
 import "@nomicfoundation/hardhat-ethers";
 import { HardhatUserConfig } from "hardhat/config";
@@ -15,7 +16,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     sepolia: {
-      url: "https://eth-sepolia.g.alchemy.com/v2/yUWc_wLg_TSq_8f09jOLg",
+      url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/yUWc_wLg_TSq_8f09jOLg",
       accounts: [PRIVATE_KEY],
       chainId: 11155111,
     },

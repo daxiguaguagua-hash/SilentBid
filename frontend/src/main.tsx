@@ -11,7 +11,7 @@ const config = createConfig({
   chains: [hardhat, sepolia],
   transports: {
     [hardhat.id]: http("http://localhost:8545"),
-    [sepolia.id]: http("https://eth-sepolia.g.alchemy.com/v2/yUWc_wLg_TSq_8f09jOLg"),
+    [sepolia.id]: http(import.meta.env.VITE_SEPOLIA_RPC || "https://eth-sepolia.g.alchemy.com/v2/yUWc_wLg_TSq_8f09jOLg"),
   },
 });
 
