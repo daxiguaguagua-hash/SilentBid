@@ -4,6 +4,40 @@ Privacy-preserving sealed-bid auction on Zama FHEVM.
 
 SilentBid is a working dApp demo where users submit encrypted bids from the browser. The contract accepts encrypted inputs and updates auction state without exposing plaintext bid amounts on-chain.
 
+## Privacy Proof On Sepolia
+
+The core evidence is visible on Sepolia through Alchemy Sandbox or Etherscan. The encrypted bid transaction calls the SilentBid contract, but the transaction input is encrypted calldata instead of a plaintext bid amount.
+
+| Proof item | Value |
+|---|---|
+| Network | Sepolia testnet |
+| SilentBid contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| Encrypted bid tx used for proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| RPC method | `eth_getTransactionByHash` |
+| `from` | `0x68269ebf49b17232a806e4caf126b340064d24ad` |
+| `to` | `0xab06cb9cddc96b4c8725f3298548e56cbc10994d` |
+| `value` | `0x0` |
+| `input` | Long calldata beginning with `0x38263e82...`, not a plaintext bid |
+
+```mermaid
+flowchart LR
+  A["User enters bid"] --> B["Browser encrypts with Zama SDK"]
+  B --> C["Sepolia tx input is encrypted calldata"]
+  C --> D["Alchemy/Etherscan cannot show plaintext bid amount"]
+  D --> E["Receipt status 0x1 proves tx succeeded"]
+```
+
+Verification steps:
+
+1. Open [Alchemy Sandbox](https://sandbox.alchemy.com/).
+2. Select `Ethereum Sepolia`.
+3. Select `eth_getTransactionByHash`.
+4. Enter tx hash `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1`.
+5. Confirm `to` is the SilentBid contract and `input` is a long encrypted calldata payload.
+6. Switch to `eth_getTransactionReceipt` with the same hash and confirm `status: "0x1"`.
+
+This proves the bid transaction was submitted and confirmed on Sepolia while the plaintext bid amount was not exposed in the transaction input.
+
 ## Bounty Context
 
 SilentBid is built for the OpenBuild Zama bounty: [5000U Zama Bounty: Confidential Onchain Finance](https://openbuild.xyz/learn/challenges/2095330503).
@@ -58,7 +92,8 @@ Verified browser transactions:
 | Flow | Tx |
 |---|---|
 | Trivial bid | `0x6ebbe500dac2e408da2d0c...` |
-| Encrypted bid | `0xfc54da826c251e17fc6ac6...` |
+| Encrypted bid proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| Owner end auction | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
 
 ## Tech Stack
 

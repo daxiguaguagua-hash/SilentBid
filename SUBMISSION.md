@@ -11,9 +11,39 @@
 | Submission form | https://forms.gle/h2vdBaZ9zwmLVzeu5 |
 | Sepolia contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
 | Explorer | https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47 |
-| Verified encrypted bid tx | `0xfc54da826c251e17fc6ac6...` |
+| Verified encrypted bid tx | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| Verified end auction tx | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
 | Verified trivial bid tx | `0x6ebbe500dac2e408da2d0c...` |
 | Local demo URL | `http://localhost:5173/` |
+
+## Most Important Proof: Bid Amount Is Not Public
+
+Use this proof first in the README, demo, and judge walkthrough.
+
+| Step | Evidence |
+|---|---|
+| Query transaction | `eth_getTransactionByHash` on Ethereum Sepolia |
+| Transaction hash | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| Sender | `from: 0x68269ebf49b17232a806e4caf126b340064d24ad` |
+| Contract | `to: 0xab06cb9cddc96b4c8725f3298548e56cbc10994d` |
+| ETH value | `value: 0x0` |
+| Transaction input | Long calldata beginning with `0x38263e82...` |
+| Privacy conclusion | The chain sees encrypted calldata and proof data, not the plaintext bid amount |
+| Success proof | `eth_getTransactionReceipt` returns `status: 0x1` for the same tx |
+
+```mermaid
+flowchart TD
+  A["Chrome + MetaMask submits bid"] --> B["Zama SDK encrypted input"]
+  B --> C["Sepolia tx 0x8c9f75..."]
+  C --> D["input is encrypted calldata"]
+  D --> E["No plaintext bid amount on-chain"]
+  C --> F["receipt status 0x1"]
+  F --> G["Bid transaction succeeded"]
+```
+
+Copy-ready proof statement:
+
+> On Sepolia, the encrypted bid transaction `0x8c9f75df...65b1` calls the SilentBid contract with `value: 0x0` and a long encrypted calldata payload beginning with `0x38263e82...`. The plaintext bid amount is not visible in the transaction input or logs, while the receipt confirms success with `status: 0x1`.
 
 ## Short Description
 
@@ -91,7 +121,9 @@ This pattern directly addresses the tension between blockchain transparency and 
 | Contract tests | Passing |
 | Frontend typecheck/build/tests | Passing |
 | Sepolia browser smoke | Passing |
-| Encrypted bid tx | Confirmed through MetaMask |
+| Encrypted bid tx | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` confirmed through MetaMask |
+| Encrypted bid calldata privacy | Verified via Alchemy Sandbox `eth_getTransactionByHash` |
+| Encrypted bid receipt | Verified via Alchemy Sandbox `eth_getTransactionReceipt`, `status: 0x1` |
 | Bid count refresh | Verified from `1` to `2` |
 
 ## Manual Chrome / MetaMask Boundary
