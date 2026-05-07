@@ -14,11 +14,13 @@ INBOX 为空时看 TODO.md 自行推进。
 
 # 开发闭环
 
+0. **接到新任务 → 先和 Codex 商量**（`codex exec` 描述任务背景），综合 Codex 意见 + 自己判断，做任务拆分，落笔记到 memory/
 1. 写代码 + 测试
 2. npm test
-3. git add + git commit
-4. 清理工作区
-5. 更新 STATUS.md
+3. codex review --uncommitted
+4. git add + git commit
+5. 清理工作区
+6. 更新 STATUS.md
 
 # 上下文管理
 

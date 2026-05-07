@@ -2,18 +2,20 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
+import { useI18n } from '../i18n';
 
 export default function Navbar() {
   const location = useLocation();
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
+  const { t } = useI18n();
 
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   const navItems = [
-    { name: 'Archive', path: '/lobby' },
-    { name: 'Dashboard', path: '/dashboard' },
+    { name: t("nav.archive"), path: '/lobby' },
+    { name: t("nav.dashboard"), path: '/dashboard' },
   ];
 
   return (
@@ -52,7 +54,7 @@ export default function Navbar() {
             onClick={() => connect({ connector: injected() })}
             className="border border-black/10 px-8 py-2.5 rounded-sm font-sans text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all active:scale-95"
           >
-            Connect Wallet
+            {t("nav.connectWallet")}
           </button>
         )}
       </nav>

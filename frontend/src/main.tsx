@@ -5,6 +5,7 @@ import { WagmiProvider, createConfig, http } from "wagmi";
 import { hardhat, sepolia } from "wagmi/chains";
 import App from "./App";
 import "./index.css";
+import { I18nProvider } from "./i18n";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <I18nProvider locale={import.meta.env.VITE_LOCALE || "en"}>
+            <App />
+          </I18nProvider>
       </QueryClientProvider>
     </WagmiProvider>
   </React.StrictMode>

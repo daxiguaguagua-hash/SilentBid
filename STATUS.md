@@ -1,5 +1,14 @@
 # STATUS
 
+## 2026-05-07 10:58 UI integration with Codex-approved plan
+- Codex reviewed both repos and approved: extract hook → layer new UI on top.
+- Extracted `useSilentBid` hook (all wagmi/FHEVM/contract/events logic) + `lib/bids.ts` (parseBidAmount).
+- Migrated AI Studio editorial UI: Tailwind v4, Playfair Display, 4-route SPA (Home, Lobby, AuctionDetail, Dashboard).
+- AuctionDetail consumes `useSilentBid` for real contract interaction. Navbar uses lightweight wagmi hooks.
+- Updated unit (7/7) and E2E (5/5) tests to match new UI. All 22 tests pass.
+- CSS now emitted in production build (30.95 KB).
+- 2 commits on `codex-silentbid-ui-polish`.
+
 ## 2026-05-07 09:40 Codex review + Claude Code fixes
 - Fixed HIGH: `allowBidDecryption` / `allowWinnerDecryption` now require `ended == true` before granting decryption ACL. Previously anyone could decrypt mid-auction.
 - Synced button wording: docs referenced "Bid encrypted" but UI says "Place Private Bid". Updated README, DEMO_SCRIPT, WORKFLOW.
