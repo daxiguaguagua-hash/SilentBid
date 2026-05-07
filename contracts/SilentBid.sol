@@ -89,13 +89,15 @@ contract SilentBid is ZamaEthereumConfig {
         emit AuctionEnded(msg.sender);
     }
 
-    /// @notice Allow any user to decrypt the highest bid
+    /// @notice Allow any user to decrypt the highest bid (only after auction ends)
     function allowBidDecryption(address user) public {
+        require(ended, "Auction not ended");
         FHE.allow(_highestBid, user);
     }
 
-    /// @notice Allow any user to decrypt the winner
+    /// @notice Allow any user to decrypt the winner (only after auction ends)
     function allowWinnerDecryption(address user) public {
+        require(ended, "Auction not ended");
         FHE.allow(_winner, user);
     }
 
