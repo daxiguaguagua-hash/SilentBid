@@ -20,3 +20,4 @@
 [ ] Google Form 提交
 [*] 前端 Bid 输入框加 "BID Credits" 单位
 [ ] i18n key 集中管理 — 从硬编码字符串迁移到统一 key 常量文件，所有 t("xxx.yyy") 改为 t(KEYS.xxx.yyy)
+[ ] 线上 demo 拍卖重部署 — 见 DEMO_AUCTION_REDEPLOY_TASK.md
