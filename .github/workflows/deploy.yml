@@ -17,7 +17,7 @@ env:
   AWS_REGION: us-east-2
   AWS_ROLE_ARN: arn:aws:iam::297041783557:role/GitHubActionsSilentBidDeploy
   DEPLOY_BUCKET: silentbid-deploy-artifacts-297041783557-us-east-2
-  DEPLOY_INSTANCE_ID: i-01ea7be10f304c673
+  DEPLOY_INSTANCE_ID: i-092e6b041c0940e4c
   VITE_CONTRACT_ADDRESS: 0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
 
 jobs:
