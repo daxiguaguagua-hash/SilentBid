@@ -11,7 +11,7 @@ The core evidence is visible on Sepolia through Alchemy Sandbox or Etherscan. Th
 | Proof item | Value |
 |---|---|
 | Network | Sepolia testnet |
-| SilentBid contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| SilentBid contract | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
 | Encrypted bid tx used for proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
 | RPC method | `eth_getTransactionByHash` |
 | `from` | `0x68269ebf49b17232a806e4caf126b340064d24ad` |
@@ -83,9 +83,9 @@ flowchart LR
 
 | Network | Address |
 |---|---|
-| Sepolia | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| Sepolia | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
 
-[View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47)
+[View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85)
 
 Verified browser transactions:
 
@@ -131,7 +131,7 @@ cd frontend && npm install
 Create `frontend/.env`:
 
 ```bash
-VITE_CONTRACT_ADDRESS=0x616239Fd271BD7A4FAc343ABDD90e51244077b47
+VITE_CONTRACT_ADDRESS=0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85
 ```
 
 Run the frontend:

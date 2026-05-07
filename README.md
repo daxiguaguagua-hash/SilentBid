@@ -13,7 +13,7 @@ SilentBid 是一个可运行的 dApp 演示：用户从浏览器提交加密出�
 | 证明项 | 值 |
 |---|---|
 | 网络 | Sepolia 测试网 |
-| SilentBid 合约 | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| SilentBid 合约 | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
 | 用于证明的加密出价交易 | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
 | RPC 方法 | `eth_getTransactionByHash` |
 | `from` | `0x68269ebf49b17232a806e4caf126b340064d24ad` |
@@ -85,9 +85,9 @@ flowchart LR
 
 | 网络 | 地址 |
 |---|---|
-| Sepolia | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| Sepolia | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
 
-[在 Sepolia Etherscan 上查看合约](https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47)
+[在 Sepolia Etherscan 上查看合约](https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85)
 
 已验证的浏览器交易：
 
@@ -133,7 +133,7 @@ cd frontend && npm install
 创建 `frontend/.env`：
 
 ```bash
-VITE_CONTRACT_ADDRESS=0x616239Fd271BD7A4FAc343ABDD90e51244077b47
+VITE_CONTRACT_ADDRESS=0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85
 ```
 
 启动前端：

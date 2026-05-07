@@ -5,11 +5,16 @@ async function main() {
   console.log("Deploying with:", deployer.address);
 
   const ONE_DAY = 86400;
+  const durationDays = parseInt(process.env.AUCTION_DURATION_DAYS || "7", 10);
+  const duration = durationDays * ONE_DAY;
+  console.log(`Auction duration: ${durationDays} days (${duration} seconds)`);
+
   const SilentBid = await ethers.getContractFactory("SilentBid");
-  const auction = await SilentBid.deploy(ONE_DAY);
+  const auction = await SilentBid.deploy(duration);
   await auction.waitForDeployment();
 
-  console.log("SilentBid deployed to:", await auction.getAddress());
+  const address = await auction.getAddress();
+  console.log("SilentBid deployed to:", address);
 }
 
 main().catch((err) => {
