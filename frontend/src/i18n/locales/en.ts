@@ -20,7 +20,8 @@ const en = {
       titleLine1: "The",
       titleLine2: "Silence of",
       titleLine3: "the Bids",
-      subtitle: "Private bids. Public settlement. No plaintext bid amounts on-chain.",
+      subtitle:
+        "Private bids. Public settlement. No plaintext bid amounts on-chain.",
       connectWallet: "Connect Wallet",
       enterAuction: "Enter Auction",
     },
@@ -51,26 +52,29 @@ const en = {
 
   lobby: {
     title: "Archive.",
-    description: "A privacy-preserving sealed-bid auction secured through Fully Homomorphic Encryption.",
+    description:
+      "A privacy-preserving sealed-bid auction secured through Fully Homomorphic Encryption.",
     fheLabel: "Fully Homomorphic Encryption",
     filterActive: "Active",
     filterResolved: "Resolved",
-        bidCount: "Bids: ",
+    bidCount: "Bids: ",
     card: {
       badge: "Live Auction",
       title: "SilentBid Auction",
       subtitle: "On-chain",
-      description: "Sealed-bid auction on Zama FHEVM. All bids encrypted before reaching the contract.",
+      description:
+        "Sealed-bid auction on Zama FHEVM. All bids encrypted before reaching the contract.",
       statusLabel: "Status",
       statusValue: "Active",
-        statusResolved: "Ended",
+      statusResolved: "Ended",
       viewDetails: "View Details",
     },
     card2: {
       badge: "Upcoming",
       title: "RWA Portfolio Auction",
       subtitle: "Coming Q3",
-      description: "Tokenized real-world asset portfolio auction. Institutional-grade sealed bidding with full FHE privacy guarantees.",
+      description:
+        "Tokenized real-world asset portfolio auction. Institutional-grade sealed bidding with full FHE privacy guarantees.",
       statusValue: "Pre-Launch",
       viewDetails: "Preview",
     },
@@ -78,13 +82,33 @@ const en = {
       badge: "Resolved",
       title: "DAO Treasury Auction",
       subtitle: "Settled",
-      description: "Decentralized grant allocation auction. Winning bid selected through FHE comparison without exposing competing proposals.",
+      description:
+        "Decentralized grant allocation auction. Winning bid selected through FHE comparison without exposing competing proposals.",
       statusValue: "Finalized",
       viewDetails: "Review",
     },
+    previewUpcoming: {
+      badge: "Upcoming",
+      title: "RWA Portfolio Auction",
+      description:
+        "This auction is in preparation. Institutional-grade sealed bidding for tokenized real-world assets, secured by Zama FHEVM.",
+      status: "Pre-Launch",
+    },
+    previewResolved: {
+      badge: "Settled",
+      title: "DAO Treasury Auction",
+      description:
+        "This auction has been settled. Winning bid was selected through FHE comparison without exposing competing proposals on-chain.",
+      status: "Finalized",
+    },
+    previewBack: "← Back to Archive",
+    previewZama: "Zama FHEVM",
+    previewSepolia: "Sepolia",
+
     banner: {
       title: "Security Audit: Zama FHEVM",
-      description: "All bids are processed on-chain using Zama's FHEVM. Encryption happens in the browser before the transaction leaves your wallet, ensuring zero-leakage throughout the auction lifecycle.",
+      description:
+        "All bids are processed on-chain using Zama's FHEVM. Encryption happens in the browser before the transaction leaves your wallet, ensuring zero-leakage throughout the auction lifecycle.",
       cta: "Enter Auction",
     },
   },
@@ -115,7 +139,8 @@ const en = {
       error: "Use a whole number from 1 to {max} BID Credits.",
       submit: "Place Private Bid",
       confirming: "Confirming...",
-      notice: "All inputs are locally encrypted within the secure browser execution environment.",
+      notice:
+        "All inputs are locally encrypted within the secure browser execution environment.",
     },
     activity: {
       title: "Activity Log",
@@ -125,10 +150,11 @@ const en = {
     },
     dev: {
       title: "Developer test controls",
-      description: "Plain bids are only for debugging state refresh and contract wiring.",
+      description:
+        "Plain bids are only for debugging state refresh and contract wiring.",
       debugBid: "Debug Plain Bid",
       endAuction: "End Auction",
-        restartAuction: "Restart Auction",
+      restartAuction: "Restart Auction",
     },
     meta: {
       auction: "Auction",
@@ -164,7 +190,8 @@ const en = {
   dashboard: {
     titleLine1: "Archive",
     titleLine2: "Control.",
-    description: "Monitoring cryptographic liquidity and settlement status across active FHEVM segments.",
+    description:
+      "Monitoring cryptographic liquidity and settlement status across active FHEVM segments.",
     disconnected: "Connect your wallet to access the dashboard.",
     openAuction: "Open Auction",
     wallet: {
@@ -179,7 +206,8 @@ const en = {
       label: "Sepolia Wallet",
       cta: "Place Private Bid",
     },
-    quote: "\"The archive remembers everything, even the things it was designed to forget. Silence is the only true encryption.\"",
+    quote:
+      '"The archive remembers everything, even the things it was designed to forget. Silence is the only true encryption."',
   },
 
   status: {
@@ -199,5 +227,7 @@ const en = {
 
 export default en;
 
-type DeepString<T> = T extends string ? string : { [K in keyof T]: DeepString<T[K]> };
+type DeepString<T> = T extends string
+  ? string
+  : { [K in keyof T]: DeepString<T[K]> };
 export type Locale = DeepString<typeof en>;

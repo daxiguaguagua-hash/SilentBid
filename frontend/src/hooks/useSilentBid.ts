@@ -1,16 +1,26 @@
 import { useState, useEffect } from "react";
 import {
-  useConnection, useConnect, useDisconnect,
-  useWriteContract, useReadContract, useWatchContractEvent,
+  useConnection,
+  useConnect,
+  useDisconnect,
+  useWriteContract,
+  useReadContract,
+  useWatchContractEvent,
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { toHex } from "viem";
-import { createInstance, initSDK, SepoliaConfigV2, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
+import {
+  createInstance,
+  initSDK,
+  SepoliaConfigV2,
+  type FhevmInstance,
+} from "@zama-fhe/relayer-sdk/web";
 import ABI from "../SilentBid.abi.json";
 import { parseBidAmount } from "../lib/bids";
 
-const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "") as `0x${string}`;
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS ||
+  "") as `0x${string}`;
 
 const ENABLE_TEST = import.meta.env.VITE_ENABLE_TEST_CONTROLS === "true";
 
@@ -22,7 +32,11 @@ export function useSilentBid() {
   const { address, isConnected } = useConnection();
   const { mutate: connect } = useConnect();
   const { mutate: disconnect } = useDisconnect();
-  const { mutateAsync: writeContractAsync, data: txHash, isPending } = useWriteContract();
+  const {
+    mutateAsync: writeContractAsync,
+    data: txHash,
+    isPending,
+  } = useWriteContract();
 
   const { isSuccess: txConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,
@@ -34,29 +48,49 @@ export function useSilentBid() {
   const [events, setEvents] = useState<string[]>([]);
 
   const { data: bidCount, refetch: refetchBidCount } = useReadContract({
-    address: CONTRACT_ADDRESS, abi: ABI, functionName: "bidCount",
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "bidCount",
   });
   const { data: ended, refetch: refetchEnded } = useReadContract({
-    address: CONTRACT_ADDRESS, abi: ABI, functionName: "ended",
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "ended",
   });
   const { data: owner, refetch: refetchOwner } = useReadContract({
-    address: CONTRACT_ADDRESS, abi: ABI, functionName: "owner",
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "owner",
   });
   const { data: isActive, refetch: refetchIsActive } = useReadContract({
-    address: CONTRACT_ADDRESS, abi: ABI, functionName: "isActive",
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "isActive",
   });
 
   const bidCountLabel = String((bidCount as bigint | number | undefined) ?? 0);
   const endedValue = Boolean(ended);
   const isActiveValue = Boolean(isActive);
   const ownerAddress = typeof owner === "string" ? owner : undefined;
-  const isOwner = Boolean(address && ownerAddress && address.toLowerCase() === ownerAddress.toLowerCase());
+  const isOwner = Boolean(
+    address &&
+    ownerAddress &&
+    address.toLowerCase() === ownerAddress.toLowerCase(),
+  );
   const parsedBidAmount = parseBidAmount(bidAmount);
   const isBidAmountValid = parsedBidAmount !== null;
-  const statusLabel = endedValue ? "Closed" : isActiveValue ? "Active" : "Expired";
+  const statusLabel = endedValue
+    ? "Closed"
+    : isActiveValue
+      ? "Active"
+      : "Expired";
   const fhevmLabel = instance ? "Ready" : "Loading";
-  const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
-  const shortContract = CONTRACT_ADDRESS ? `${CONTRACT_ADDRESS.slice(0, 6)}...${CONTRACT_ADDRESS.slice(-4)}` : "Not configured";
+  const shortAddress = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : "";
+  const shortContract = CONTRACT_ADDRESS
+    ? `${CONTRACT_ADDRESS.slice(0, 6)}...${CONTRACT_ADDRESS.slice(-4)}`
+    : "Not configured";
 
   useEffect(() => {
     if (!txConfirmed) return;
@@ -66,7 +100,13 @@ export function useSilentBid() {
       refetchOwner(),
       refetchIsActive(),
     ]);
-  }, [txConfirmed, refetchBidCount, refetchEnded, refetchOwner, refetchIsActive]);
+  }, [
+    txConfirmed,
+    refetchBidCount,
+    refetchEnded,
+    refetchOwner,
+    refetchIsActive,
+  ]);
 
   useWatchContractEvent({
     address: CONTRACT_ADDRESS,
@@ -75,7 +115,9 @@ export function useSilentBid() {
     onLogs(logs) {
       for (const log of logs) {
         const bidder = (log as any).args?.bidder || "unknown";
-        setEvents((prev) => [...prev, `Bid from ${bidder.slice(0, 8)}...`].slice(-10));
+        setEvents((prev) =>
+          [...prev, `Bid from ${bidder.slice(0, 8)}...`].slice(-10),
+        );
       }
     },
   });
@@ -89,10 +131,15 @@ export function useSilentBid() {
           return;
         }
 
-        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
         const numericChainId = parseInt(String(chainId), 16);
         const cfg = FHEVM_CONFIG[numericChainId as keyof typeof FHEVM_CONFIG];
-        if (!cfg) { setStatus(`Unsupported chain ${numericChainId}`); return; }
+        if (!cfg) {
+          setStatus(`Unsupported chain ${numericChainId}`);
+          return;
+        }
 
         setStatus("Loading FHEVM SDK...");
         await initSDK();
@@ -180,19 +227,38 @@ export function useSilentBid() {
 
   return {
     // wallet
-    address, isConnected, connect: () => connect({ connector: injected() }), disconnect,
+    address,
+    isConnected,
+    connect: () => connect({ connector: injected() }),
+    disconnect,
     // FHEVM
-    instance, fhevmLabel,
+    instance,
+    fhevmLabel,
     // contract state
-    bidCount: bidCountLabel, ended: endedValue, isActive: isActiveValue, owner: ownerAddress, isOwner,
+    bidCount: bidCountLabel,
+    ended: endedValue,
+    isActive: isActiveValue,
+    owner: ownerAddress,
+    isOwner,
     // bid
-    bidAmount, setBidAmount, parsedBidAmount, isBidAmountValid,
+    bidAmount,
+    setBidAmount,
+    parsedBidAmount,
+    isBidAmountValid,
     // derived
-    statusLabel, status, shortAddress, shortContract, events,
+    statusLabel,
+    status,
+    shortAddress,
+    shortContract,
+    events,
     // actions
-    handleBid, handleBidTrivial, handleEndAuction, handleRestartAuction,
+    handleBid,
+    handleBidTrivial,
+    handleEndAuction,
+    handleRestartAuction,
     // tx
     ENABLE_TEST,
-    txHash, isPending,
+    txHash,
+    isPending,
   };
 }

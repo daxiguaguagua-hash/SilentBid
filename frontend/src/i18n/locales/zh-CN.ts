@@ -57,22 +57,24 @@ const zhCN: Locale = {
     fheLabel: "全同态加密",
     filterActive: "进行中",
     filterResolved: "已结束",
-        bidCount: "出价数: ",
+    bidCount: "出价数: ",
     card: {
       badge: "实时拍卖",
       title: "SilentBid 拍卖",
       subtitle: "链上",
-      description: "基于 Zama FHEVM 的密封竞价拍卖。所有出价在到达合约之前均已加密。",
+      description:
+        "基于 Zama FHEVM 的密封竞价拍卖。所有出价在到达合约之前均已加密。",
       statusLabel: "状态",
       statusValue: "进行中",
-        statusResolved: "已结束",
+      statusResolved: "已结束",
       viewDetails: "查看详情",
     },
     card2: {
       badge: "即将开始",
       title: "RWA 资产组合拍卖",
       subtitle: "Q3 上线",
-      description: "代币化现实资产组合拍卖，面向机构的密封竞价系统，全程 FHE 隐私保护。",
+      description:
+        "代币化现实资产组合拍卖，面向机构的密封竞价系统，全程 FHE 隐私保护。",
       statusValue: "筹备中",
       viewDetails: "预览",
     },
@@ -80,13 +82,33 @@ const zhCN: Locale = {
       badge: "已结算",
       title: "DAO 财库拍卖",
       subtitle: "已完成",
-      description: "去中心化拨款分配拍卖。通过 FHE 加密比较选出中标方案，竞标方案全程保密。",
+      description:
+        "去中心化拨款分配拍卖。通过 FHE 加密比较选出中标方案，竞标方案全程保密。",
       statusValue: "已定标",
       viewDetails: "回顾",
     },
+    previewUpcoming: {
+      badge: "即将开始",
+      title: "RWA 资产组合拍卖",
+      description:
+        "此拍卖正在筹备中。面向机构的代币化现实资产密封竞价，由 Zama FHEVM 全程保护隐私。",
+      status: "筹备中",
+    },
+    previewResolved: {
+      badge: "已结算",
+      title: "DAO 财库拍卖",
+      description:
+        "此拍卖已完成结算。中标方案通过 FHE 加密比较选出，竞标方案全程保密。",
+      status: "已定标",
+    },
+    previewBack: "← 返回档案",
+    previewZama: "Zama FHEVM",
+    previewSepolia: "Sepolia",
+
     banner: {
       title: "安全审计：Zama FHEVM",
-      description: "所有出价均通过 Zama FHEVM 在链上处理。加密在浏览器中完成，在交易离开钱包之前即完成，确保整个拍卖生命周期零泄露。",
+      description:
+        "所有出价均通过 Zama FHEVM 在链上处理。加密在浏览器中完成，在交易离开钱包之前即完成，确保整个拍卖生命周期零泄露。",
       cta: "进入拍卖",
     },
   },
@@ -130,7 +152,7 @@ const zhCN: Locale = {
       description: "明文出价仅用于调试状态刷新和合约连接。",
       debugBid: "调试明文出价",
       endAuction: "结束拍卖",
-        restartAuction: "重启拍卖",
+      restartAuction: "重启拍卖",
     },
     meta: {
       auction: "拍卖",
@@ -181,7 +203,7 @@ const zhCN: Locale = {
       label: "Sepolia 钱包",
       cta: "提交密封出价",
     },
-    quote: "\"档案记得一切，即使是它被设计要遗忘的事物。沉默是唯一真正的加密。\"",
+    quote: '"档案记得一切，即使是它被设计要遗忘的事物。沉默是唯一真正的加密。"',
   },
 
   status: {

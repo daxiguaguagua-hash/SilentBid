@@ -1,11 +1,12 @@
-import { motion } from 'motion/react';
-import { Lock, CheckCircle, Clock, Hourglass, Archive } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useReadContract } from 'wagmi';
-import { useI18n } from '../i18n';
-import ABI from '../SilentBid.abi.json';
+import { motion } from "motion/react";
+import { Lock, CheckCircle, Clock, Hourglass, Archive } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useReadContract } from "wagmi";
+import { useI18n } from "../i18n";
+import ABI from "../SilentBid.abi.json";
 
-const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '') as `0x${string}`;
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS ||
+  "") as `0x${string}`;
 
 function AuctionCard({
   t,
@@ -32,8 +33,12 @@ function AuctionCard({
       className="group"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-surface-container mb-6 shadow-inner">
-        <div className={`w-full h-full flex items-center justify-center ${cardKey === 'card' ? 'bg-gradient-to-br from-primary/5 to-tertiary/10' : cardKey === 'card2' ? 'bg-gradient-to-br from-amber-50/10 to-orange-100/10' : 'bg-gradient-to-br from-slate-100/10 to-slate-200/5'}`}>
-          <div className={`transition-all duration-700 group-hover:scale-110 ${statusClass}`}>
+        <div
+          className={`w-full h-full flex items-center justify-center ${cardKey === "card" ? "bg-gradient-to-br from-primary/5 to-tertiary/10" : cardKey === "card2" ? "bg-gradient-to-br from-amber-50/10 to-orange-100/10" : "bg-gradient-to-br from-slate-100/10 to-slate-200/5"}`}
+        >
+          <div
+            className={`transition-all duration-700 group-hover:scale-110 ${statusClass}`}
+          >
             {statusIcon}
           </div>
         </div>
@@ -62,7 +67,9 @@ function AuctionCard({
             <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 mb-1">
               {t("lobby.card.statusLabel")}
             </span>
-            <span className={`font-display text-lg italic flex items-center gap-2 ${statusClass}`}>
+            <span
+              className={`font-display text-lg italic flex items-center gap-2 ${statusClass}`}
+            >
               {statusIcon}
               {t(`lobby.${cardKey}.statusValue`)}
             </span>
@@ -72,19 +79,22 @@ function AuctionCard({
             className="group/link px-6 py-2 border border-black/10 text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 rounded-sm inline-flex items-center gap-2"
           >
             {t(`lobby.${cardKey}.viewDetails`)}
-            <span className="inline-block transition-transform duration-300 group-hover/link:translate-x-1">&rarr;</span>
+            <span className="inline-block transition-transform duration-300 group-hover/link:translate-x-1">
+              &rarr;
+            </span>
           </Link>
         </div>
 
         {contractBidCount !== undefined && (
           <div className="text-[9px] font-mono text-on-surface-variant opacity-50 pt-1">
-            {t("lobby.bidCount")}{contractBidCount}
+            {t("lobby.bidCount")}
+            {contractBidCount}
           </div>
         )}
 
-        {cardKey !== 'card' && (
+        {cardKey !== "card" && (
           <div className="text-[8px] font-mono text-on-surface-variant opacity-30 pt-1 uppercase tracking-widest">
-            {cardKey === 'card2' ? 'Zama FHEVM' : 'Ethereum Sepolia'}
+            {cardKey === "card2" ? "Zama FHEVM" : "Ethereum Sepolia"}
           </div>
         )}
       </div>
@@ -96,10 +106,14 @@ export default function Lobby() {
   const { t } = useI18n();
 
   const { data: ended } = useReadContract({
-    address: CONTRACT_ADDRESS, abi: ABI, functionName: 'ended',
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "ended",
   });
   const { data: bidCount } = useReadContract({
-    address: CONTRACT_ADDRESS, abi: ABI, functionName: 'bidCount',
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "bidCount",
   });
 
   const isClosed = Boolean(ended);
@@ -133,10 +147,22 @@ export default function Lobby() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em]"
         >
-          <span className={isClosed ? "opacity-40" : "text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8"}>
+          <span
+            className={
+              isClosed
+                ? "opacity-40"
+                : "text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8"
+            }
+          >
             {t("lobby.filterActive")}
           </span>
-          <span className={isClosed ? "text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8" : "opacity-40"}>
+          <span
+            className={
+              isClosed
+                ? "text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8"
+                : "opacity-40"
+            }
+          >
             {t("lobby.filterResolved")}
           </span>
         </motion.div>
@@ -150,13 +176,13 @@ export default function Lobby() {
           contractBidCount={bidCountLabel}
           linkTo="/auction/live"
           statusIcon={
-            isClosed
-              ? <Clock className="w-5 h-5" />
-              : <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+            isClosed ? (
+              <Clock className="w-5 h-5" />
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+            )
           }
-          statusClass={
-            isClosed ? "text-secondary/60" : "text-green-600"
-          }
+          statusClass={isClosed ? "text-secondary/60" : "text-green-600"}
         />
 
         {/* Card 2 — Upcoming auction */}
@@ -186,12 +212,21 @@ export default function Lobby() {
         className="mt-32 p-12 bg-secondary text-on-secondary rounded-sm flex flex-col md:flex-row items-center justify-between gap-12"
       >
         <div className="max-w-xl">
-          <h4 className="font-display text-3xl font-bold mb-4 tracking-tight">{t("lobby.banner.title")}</h4>
-          <p className="opacity-80 text-sm leading-relaxed font-sans">{t("lobby.banner.description")}</p>
+          <h4 className="font-display text-3xl font-bold mb-4 tracking-tight">
+            {t("lobby.banner.title")}
+          </h4>
+          <p className="opacity-80 text-sm leading-relaxed font-sans">
+            {t("lobby.banner.description")}
+          </p>
         </div>
-        <Link to="/auction/live" className="group whitespace-nowrap px-10 py-4 border border-on-secondary/20 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-on-secondary hover:text-secondary transition-all duration-300 rounded-sm shrink-0 inline-flex items-center gap-2">
+        <Link
+          to="/auction/live"
+          className="group whitespace-nowrap px-10 py-4 border border-on-secondary/20 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-on-secondary hover:text-secondary transition-all duration-300 rounded-sm shrink-0 inline-flex items-center gap-2"
+        >
           {t("lobby.banner.cta")}
-          <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
+          <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+            &rarr;
+          </span>
         </Link>
       </motion.div>
     </div>
