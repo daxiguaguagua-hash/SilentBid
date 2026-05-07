@@ -218,3 +218,37 @@ Public blockchains face a tension: transparency enables auditability, but public
 SilentBid shows a concrete privacy use case for FHE on-chain. The bid remains encrypted, the contract can still process it, and the user can verify the transaction through a normal wallet and block explorer.
 
 This is the main value of Zama FHEVM: private inputs with programmable on-chain logic.
+
+---
+
+## Special Thanks · 特别鸣谢
+
+<div align="center">
+
+```
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   🐋  DeepSeek V4 Pro — 深海里的推理巨兽                   ║
+║       Powered by 梁文锋 & DeepSeek Team                  ║
+║       梁总的恩情还不完！                                  ║
+║                                                          ║
+║   🦾  Codex + GPT-5.5 — 最专业、最严谨的 AI               ║
+║       Review every line. Ship with confidence.            ║
+║                                                          ║
+║   ⚡  Claude Code — 开源、自由、强大的 AI 编程伙伴          ║
+║       The terminal is the IDE.                            ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+```
+
+**Built by humans. Reviewed by machines. Powered by FHE.**
+
+| Role | Model | Contribution |
+|------|-------|-------------|
+| 🧠 Architect & Builder | **DeepSeek V4 Pro** | Core logic, system design, relentless execution |
+| 🔍 Reviewer & Auditor | **Codex · GPT-5.5** | Code review, security audit, architectural critique |
+| 🛠️ Copilot & Editor | **Claude Code (OSS)** | Frontend polish, i18n, design system, docs |
+
+> *"一个人的命运，当然要靠自我奋斗，但也要考虑到 AI 的行程。"*
+
+</div>
