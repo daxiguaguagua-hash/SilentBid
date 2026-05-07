@@ -1,224 +1,225 @@
-# SilentBid
+# SilentBid · 无声竞价
 
-Privacy-preserving sealed-bid auction on Zama FHEVM.
+基于 Zama FHEVM 的隐私保护密封竞价拍卖。
 
-SilentBid is a working dApp demo where users submit encrypted bids from the browser. The contract accepts encrypted inputs and updates auction state without exposing plaintext bid amounts on-chain.
+SilentBid 是一个可运行的 dApp 演示：用户从浏览器提交加密出价，合约接收加密输入并更新拍卖状态，全程不在链上暴露明文出价金额。
 
-## Privacy Proof On Sepolia
+> 📖 [English version](README.en.md)
 
-The core evidence is visible on Sepolia through Alchemy Sandbox or Etherscan. The encrypted bid transaction calls the SilentBid contract, but the transaction input is encrypted calldata instead of a plaintext bid amount.
+## Sepolia 上的隐私证明
 
-| Proof item | Value |
+核心证据可在 Sepolia 网络上通过 Alchemy Sandbox 或 Etherscan 查看。加密出价交易调用 SilentBid 合约，但交易 input 是加密 calldata，而非明文出价金额。
+
+| 证明项 | 值 |
 |---|---|
-| Network | Sepolia testnet |
-| SilentBid contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
-| Encrypted bid tx used for proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
-| RPC method | `eth_getTransactionByHash` |
+| 网络 | Sepolia 测试网 |
+| SilentBid 合约 | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| 用于证明的加密出价交易 | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| RPC 方法 | `eth_getTransactionByHash` |
 | `from` | `0x68269ebf49b17232a806e4caf126b340064d24ad` |
 | `to` | `0xab06cb9cddc96b4c8725f3298548e56cbc10994d` |
 | `value` | `0x0` |
-| `input` | Long calldata beginning with `0x38263e82...`, not a plaintext bid |
+| `input` | 以 `0x38263e82...` 开头的长 calldata，非明文出价 |
 
 ```mermaid
 flowchart LR
-  A["User enters bid"] --> B["Browser encrypts with Zama SDK"]
-  B --> C["Sepolia tx input is encrypted calldata"]
-  C --> D["Alchemy/Etherscan cannot show plaintext bid amount"]
-  D --> E["Receipt status 0x1 proves tx succeeded"]
+  A["用户输入出价"] --> B["浏览器用 Zama SDK 加密"]
+  B --> C["Sepolia 交易 input 为加密 calldata"]
+  C --> D["Alchemy/Etherscan 无法看到明文出价"]
+  D --> E["Receipt status 0x1 证明交易成功"]
 ```
 
-Verification steps:
+验证步骤：
 
-1. Open [Alchemy Sandbox](https://sandbox.alchemy.com/).
-2. Select `Ethereum Sepolia`.
-3. Select `eth_getTransactionByHash`.
-4. Enter tx hash `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1`.
-5. Confirm `to` is the SilentBid contract and `input` is a long encrypted calldata payload.
-6. Switch to `eth_getTransactionReceipt` with the same hash and confirm `status: "0x1"`.
+1. 打开 [Alchemy Sandbox](https://sandbox.alchemy.com/)
+2. 选择 `Ethereum Sepolia`
+3. 选择 `eth_getTransactionByHash`
+4. 输入交易哈希 `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1`
+5. 确认 `to` 为 SilentBid 合约地址，`input` 为长加密 calldata
+6. 切换到 `eth_getTransactionReceipt`，输入相同哈希，确认 `status: "0x1"`
 
-This proves the bid transaction was submitted and confirmed on Sepolia while the plaintext bid amount was not exposed in the transaction input.
+这证明了出价交易在 Sepolia 上提交并确认，同时明文出价金额未在交易 input 中暴露。
 
-## Bounty Context
+## 赏金背景
 
-SilentBid is built for the OpenBuild Zama bounty: [5000U Zama Bounty: Confidential Onchain Finance](https://openbuild.xyz/learn/challenges/2095330503).
+SilentBid 为 OpenBuild Zama 赏金任务而建：[5000U Zama Bounty: Confidential Onchain Finance](https://openbuild.xyz/learn/challenges/2095330503)
 
-| Official requirement | SilentBid response |
+| 官方要求 | SilentBid 响应 |
 |---|---|
-| Functioning dApp demo using Zama Protocol | React + Sepolia contract demo |
-| Smart contract + frontend implementation | `contracts/SilentBid.sol` + `frontend/` |
-| Real-world FHE use case | Confidential sealed-bid auction |
-| Clear project documentation | README, submission pack, testing notes, demo script |
-| 2-minute human-presented video | Pending final recording |
-| Deadline | May 10, 2026 23:59 AOE |
+| 使用 Zama Protocol 的可运行 dApp 演示 | React + Sepolia 合约演示 |
+| 智能合约 + 前端实现 | `contracts/SilentBid.sol` + `frontend/` |
+| 真实 FHE 应用场景 | 保密密封竞价拍卖 |
+| 清晰的项目文档 | README、提交材料、测试笔记、演示脚本 |
+| 2 分钟真人讲解视频 | 待最终录制 |
+| 截止日期 | 2026 年 5 月 10 日 23:59 AOE |
 
-## Why
+## 为什么做这个
 
-In a normal blockchain auction, every bid is public. Later bidders can inspect the chain and outbid previous participants by a tiny amount.
+在普通区块链拍卖中，每次出价都是公开的。后来的竞拍者可以查看链上数据，以微小差额超过前面的出价者。
 
-SilentBid demonstrates how FHE can improve this pattern:
+SilentBid 演示了 FHE 如何改善这一模式：
 
 ```mermaid
 flowchart LR
-  A["Bidder enters bid"] --> B["Browser encrypts bid"]
-  B --> C["Sepolia contract receives ciphertext"]
-  C --> D["Contract compares encrypted values"]
-  D --> E["Auction state updates"]
-  E --> F["Plaintext bid stays private"]
+  A["竞拍者输入出价"] --> B["浏览器加密出价"]
+  B --> C["Sepolia 合约接收密文"]
+  C --> D["合约比较加密数值"]
+  D --> E["拍卖状态更新"]
+  E --> F["明文出价保持私密"]
 ```
 
-## What Works Now
+## 当前可用的功能
 
-| Capability | Status |
+| 功能 | 状态 |
 |---|---|
-| Sepolia deployment | Done |
-| MetaMask connection | Done |
-| Trivial bid transaction | Done |
-| Encrypted bid transaction | Done |
-| FHEVM SDK initialization | Done |
-| Bid count refresh after tx | Done |
-| Contract tests | 10 passing |
-| Frontend checks/tests | 10 passing |
+| Sepolia 部署 | 完成 |
+| MetaMask 连接 | 完成 |
+| 普通出价交易 | 完成 |
+| 加密出价交易 | 完成 |
+| FHEVM SDK 初始化 | 完成 |
+| 交易后出价计数刷新 | 完成 |
+| 合约测试 | 10 通过 |
+| 前端检查/测试 | 10 通过 |
 
-## Contract
+## 合约
 
-| Network | Address |
+| 网络 | 地址 |
 |---|---|
 | Sepolia | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
 
-[View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47)
+[在 Sepolia Etherscan 上查看合约](https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47)
 
-Verified browser transactions:
+已验证的浏览器交易：
 
-| Flow | Tx |
+| 流程 | 交易哈希 |
 |---|---|
-| Trivial bid | `0x6ebbe500dac2e408da2d0c...` |
-| Encrypted bid proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
-| Owner end auction | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
+| 普通出价 | `0x6ebbe500dac2e408da2d0c...` |
+| 加密出价证明 | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| 所有者结束拍卖 | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
 
-## Tech Stack
+## 技术栈
 
-| Layer | Choice |
+| 层级 | 选型 |
 |---|---|
-| Contract | Solidity 0.8.24, Zama FHEVM |
-| Framework | Hardhat |
-| Frontend | React, Vite |
-| Wallet/Web3 | MetaMask, wagmi, viem |
-| FHE client | `@zama-fhe/relayer-sdk` |
-| Network | Sepolia |
+| 合约 | Solidity 0.8.24, Zama FHEVM |
+| 框架 | Hardhat |
+| 前端 | React, Vite |
+| 钱包/Web3 | MetaMask, wagmi, viem |
+| FHE 客户端 | `@zama-fhe/relayer-sdk` |
+| 网络 | Sepolia |
 
-## Core FHE Flow
+## 核心 FHE 流程
 
-The encrypted bid flow is:
+加密出价流程如下：
 
-1. User enters a bid amount in BID Credits.
-2. Frontend calls `initSDK()` and creates a Zama relayer SDK instance.
-3. Frontend creates encrypted input for the auction contract and user address.
-4. SDK returns encrypted handles and input proof.
-5. Frontend converts SDK `Uint8Array` values to `0x...` hex for wagmi/viem.
-6. MetaMask submits the transaction to Sepolia.
-7. Contract accepts the encrypted bid and emits `BidSubmitted`.
-8. Frontend refetches contract state and updates `Bids`.
+1. 用户输入出价金额（以 BID Credits 计）
+2. 前端调用 `initSDK()` 并创建 Zama relayer SDK 实例
+3. 前端为拍卖合约和用户地址创建加密输入
+4. SDK 返回加密句柄和输入证明
+5. 前端将 SDK `Uint8Array` 值转换为 wagmi/viem 用的 `0x...` hex 格式
+6. MetaMask 提交交易到 Sepolia
+7. 合约接收加密出价并发出 `BidSubmitted` 事件
+8. 前端重新获取合约状态并更新 `Bids` 计数
 
-## Quick Start
+## 快速开始
 
-Install dependencies:
+安装依赖：
 
 ```bash
 npm install
 cd frontend && npm install
 ```
 
-Create `frontend/.env`:
+创建 `frontend/.env`：
 
 ```bash
 VITE_CONTRACT_ADDRESS=0x616239Fd271BD7A4FAc343ABDD90e51244077b47
 ```
 
-Run the frontend:
+启动前端：
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Open:
+打开：
 
 ```text
 http://localhost:5173/
 ```
 
-Use MetaMask on Sepolia.
+使用 Sepolia 上的 MetaMask。
 
-## Testing
+## 测试
 
-Contract tests:
+合约测试：
 
 ```bash
 npm test
 ```
 
-Frontend typecheck, production build, and unit tests:
+前端类型检查、生产构建和单元测试：
 
 ```bash
 cd frontend
 npm run test
 ```
 
-Expected results:
+预期结果：
 
-| Check | Expected |
+| 检查项 | 预期 |
 |---|---|
-| Hardhat | 10 passing |
-| Frontend | typecheck + build + 10 tests passing |
+| Hardhat | 10 通过 |
+| 前端 | typecheck + build + 10 tests 通过 |
 
-Note: the encrypted browser demo is verified on Sepolia with Zama's hosted relayer. A local Hardhat JSON-RPC endpoint is not a Zama relayer.
+注意：加密浏览器演示在 Sepolia 上通过 Zama 托管的 relayer 验证。本地 Hardhat JSON-RPC 端点不是 Zama relayer。
 
-## Demo Flow
+## 演示流程
 
-1. Open `http://localhost:5173/`.
-2. Connect MetaMask on Sepolia.
-3. Wait for `FHEVM ready`.
-4. Enter `100` BID Credits.
-5. Click `Place Private Bid`.
-6. Confirm in MetaMask.
-7. Verify that `Bids` increments after confirmation.
+1. 打开 `http://localhost:5173/`
+2. 连接 Sepolia 上的 MetaMask
+3. 等待 `FHEVM ready`
+4. 输入 `100` BID Credits
+5. 点击 `Place Private Bid`（提交私密出价）
+6. 在 MetaMask 中确认
+7. 确认 `Bids` 计数在确认后增加
 
-Wallet-dependent flows must be tested in the local desktop Chrome browser with MetaMask installed. The in-app browser is only used for disconnected UI, route, layout, and console-error checks.
+依赖钱包的流程必须在安装了 MetaMask 的本地桌面 Chrome 浏览器中测试。应用内浏览器仅用于断开连接的 UI、路由、布局和控制台错误检查。
 
+## 合规意识隐私
 
-## Compliance-Aware Privacy
+公链面临一种张力：透明度使可审计性成为可能，但公开竞价制造了不公平市场。SilentBid 通过选择性隐私解决此问题——拍卖生命周期和出价事件保持公开可审计，而出价金额在竞价期间保持加密。拍卖结束后，仅获胜者和最高出价可通过合约 ACL 解密。此模式适用于受监管的金融应用场景：完全不可见不可接受，但出价保密必不可少。
 
-Public blockchains face a tension: transparency enables auditability, but public bids create unfair markets. SilentBid resolves this with selective privacy — the auction lifecycle and bid events remain public and auditable, while bid amounts stay encrypted during competition. After the auction ends, only the winner and highest bid are decryptable through contract ACL. This pattern is relevant for regulated financial applications where full opacity is unacceptable but bid confidentiality is essential.
+## 评审适配
 
-## Judging Fit
-
-| Judging criterion | Narrative |
+| 评审标准 | 叙述 |
 |---|---|
-| Innovation | Sealed-bid auction where bid values stay encrypted during competition |
-| Compliance awareness | Public audit trail remains visible while sensitive bid values are protected |
-| Real-world potential | Useful for RWA auctions, DAO procurement, private tenders, and confidential trading |
-| Technical implementation | Uses Zama encrypted integer types and browser-side encrypted input generation |
-| Production readiness | Contract tests, frontend tests, E2E smoke tests, and deployed Sepolia demo |
-| Usability | Reviewer commands, demo script, and submission checklist are included |
+| 创新性 | 竞价期间出价数值保持加密的密封竞价拍卖 |
+| 合规意识 | 公开审计轨迹可见，敏感出价数值受保护 |
+| 现实潜力 | 适用于 RWA 拍卖、DAO 采购、私密招标和保密交易 |
+| 技术实现 | 使用 Zama 加密整数类型和浏览器端加密输入生成 |
+| 生产就绪度 | 合约测试、前端测试、E2E 冒烟测试、已部署的 Sepolia 演示 |
+| 可用性 | 评审者命令、演示脚本和提交检查清单均已包含 |
 
-## Project Documents
+## 项目文档
 
-| File | Purpose |
+| 文件 | 用途 |
 |---|---|
-| [WORKFLOW.md](WORKFLOW.md) | Agent workflow, smoke test, known pitfalls, done criteria |
-| [TESTING.md](TESTING.md) | Test matrix and verified browser facts |
-| [ROADMAP.md](ROADMAP.md) | Submission roadmap and next priorities |
-| [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | 2-minute video narration and recording checklist |
-| [SUBMISSION.md](SUBMISSION.md) | Copy-ready submission facts and final checklist |
-| [CONTRIBUTORS.md](CONTRIBUTORS.md) | Human and AI contributors who built SilentBid |
-| [STATUS.md](STATUS.md) | Chronological progress log |
-| [TODO.md](TODO.md) | Remaining tasks |
+| [WORKFLOW.md](WORKFLOW.md) | Agent 工作流、冒烟测试、已知陷阱、完成标准 |
+| [TESTING.md](TESTING.md) | 测试矩阵和已验证的浏览器事实 |
+| [ROADMAP.md](ROADMAP.md) | 提交路线图和下一阶段优先级 |
+| [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | 2 分钟视频旁白和录制检查清单 |
+| [SUBMISSION.md](SUBMISSION.md) | 可直接复制的提交事实和最终检查清单 |
+| [STATUS.md](STATUS.md) | 按时间顺序的进度日志 |
+| [TODO.md](TODO.md) | 待完成任务 |
+| [CONTRIBUTORS.md](CONTRIBUTORS.md) | 构建 SilentBid 的人类和 AI 贡献者 |
 
-## Why This Matters
+## 为什么重要
 
-SilentBid shows a concrete privacy use case for FHE on-chain. The bid remains encrypted, the contract can still process it, and the user can verify the transaction through a normal wallet and block explorer.
+SilentBid 展示了 FHE 在链上的一个具体隐私用例。出价保持加密，合约仍能处理它，用户可以通过普通钱包和区块浏览器验证交易。
 
-This is the main value of Zama FHEVM: private inputs with programmable on-chain logic.
+这就是 Zama FHEVM 的核心价值：私有输入 + 可编程链上逻辑。
 
 ---
 
@@ -242,13 +243,13 @@ This is the main value of Zama FHEVM: private inputs with programmable on-chain 
 ╚══════════════════════════════════════════════════════════╝
 ```
 
-**Built by humans. Reviewed by machines. Powered by FHE.**
+**人类构建。AI 审查。FHE 驱动。**
 
-| Role | Model | Contribution |
-|------|-------|-------------|
-| 🧠 Architect & Builder | **DeepSeek V4 Pro** | Core logic, system design, relentless execution |
-| 🔍 Reviewer & Auditor | **Codex · GPT-5.5** | Code review, security audit, architectural critique |
-| 🛠️ Copilot & Editor | **Claude Code (OSS)** | Frontend polish, i18n, design system, docs |
+| 角色 | 模型 | 贡献 |
+|------|------|------|
+| 🧠 架构师 & 建造者 | **DeepSeek V4 Pro** | 核心逻辑、系统设计、不知疲倦的执行力 |
+| 🔍 审查者 & 审计者 | **Codex · GPT-5.5** | 代码审查、安全审计、架构批判 |
+| 🛠️ 副驾驶 & 编辑 | **Claude Code (OSS)** | 前端打磨、国际化、设计系统、文档 |
 
 > *"一个人的命运，当然要靠自我奋斗，但也要考虑到 AI 的行程。"*
 
