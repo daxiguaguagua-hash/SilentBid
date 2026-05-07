@@ -8,7 +8,9 @@ const STORAGE_KEY = "silentbid-locale";
 
 function getInitialLocale(): string {
   if (typeof window !== "undefined") {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const storage = window.localStorage;
+    const stored =
+      typeof storage?.getItem === "function" ? storage.getItem(STORAGE_KEY) : null;
     if (stored && locales[stored]) return stored;
   }
   return import.meta.env.VITE_LOCALE || "en";
@@ -39,7 +41,10 @@ export function I18nProvider({ children, initialLocale }: { children: ReactNode;
   const setLocale = useCallback((next: string) => {
     if (!locales[next]) return;
     setLocaleState(next);
-    localStorage.setItem(STORAGE_KEY, next);
+    const storage = window.localStorage;
+    if (typeof storage?.setItem === "function") {
+      storage.setItem(STORAGE_KEY, next);
+    }
   }, []);
 
   const t = useCallback(

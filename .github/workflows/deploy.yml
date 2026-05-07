@@ -1,0 +1,85 @@
+name: CI Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: silentbid-deploy
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test contracts and frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      - name: Install contract dependencies
+        run: npm ci
+
+      - name: Test contracts
+        run: npm test
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Test frontend
+        working-directory: frontend
+        env:
+          VITE_CONTRACT_ADDRESS: 0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
+        run: npm run test
+
+  deploy:
+    name: Deploy frontend to EC2
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_CONTRACT_ADDRESS: 0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
+        run: npm run build
+
+      - name: Prepare SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/silentbid_deploy
+          chmod 600 ~/.ssh/silentbid_deploy
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload artifact
+        run: tar -C frontend/dist -czf /tmp/silentbid-dist.tgz .
+
+      - name: Deploy over SSH
+        run: |
+          scp -i ~/.ssh/silentbid_deploy /tmp/silentbid-dist.tgz "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/silentbid-dist.tgz"
+          ssh -i ~/.ssh/silentbid_deploy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" 'sudo mkdir -p /var/www/silentbid && sudo tar -xzf /tmp/silentbid-dist.tgz -C /var/www/silentbid && sudo chown -R www-data:www-data /var/www/silentbid && sudo systemctl reload nginx'
