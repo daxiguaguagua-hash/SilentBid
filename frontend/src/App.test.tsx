@@ -28,7 +28,7 @@ function renderApp() {
   return render(
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <I18nProvider locale="en">
+        <I18nProvider>
           <App />
         </I18nProvider>
       </QueryClientProvider>
@@ -102,7 +102,7 @@ describe("i18n", () => {
         transports: { [hardhat.id]: http("http://localhost:8545") },
       })}>
         <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-          <I18nProvider locale="zh-CN">
+          <I18nProvider initialLocale="zh-CN">
             <App />
           </I18nProvider>
         </QueryClientProvider>

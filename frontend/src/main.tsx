@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <I18nProvider locale={import.meta.env.VITE_LOCALE || "en"}>
+        <I18nProvider>
             <App />
           </I18nProvider>
       </QueryClientProvider>

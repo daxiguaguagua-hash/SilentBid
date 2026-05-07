@@ -3,6 +3,7 @@ import { cn } from '../lib/utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { useI18n } from '../i18n';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   const location = useLocation();
@@ -25,7 +26,7 @@ export default function Navbar() {
           <span className="font-display text-3xl font-bold tracking-tighter italic text-on-surface">SilentBid.</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-12">
+        <div className="hidden md:flex items-center gap-10">
           {navItems.map((item) => (
             <Link
               key={item.name}
@@ -40,6 +41,7 @@ export default function Navbar() {
               {item.name}
             </Link>
           ))}
+          <LanguageSwitcher />
         </div>
 
         {isConnected ? (

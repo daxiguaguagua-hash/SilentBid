@@ -1,12 +1,22 @@
-import { createContext, useContext, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useState, type ReactNode } from "react";
 import en from "./locales/en";
 import zhCN from "./locales/zh-CN";
 import type { Locale } from "./locales/en";
 
 const locales: Record<string, Locale> = { en, "zh-CN": zhCN };
+const STORAGE_KEY = "silentbid-locale";
+
+function getInitialLocale(): string {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && locales[stored]) return stored;
+  }
+  return import.meta.env.VITE_LOCALE || "en";
+}
 
 type I18nContextType = {
   locale: string;
+  setLocale: (locale: string) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
 };
 
@@ -22,14 +32,20 @@ function resolve(obj: any, path: string): string | undefined {
   return typeof current === "string" ? current : undefined;
 }
 
-export function I18nProvider({ locale, children }: { locale: string; children: ReactNode }) {
+export function I18nProvider({ children, initialLocale }: { children: ReactNode; initialLocale?: string }) {
+  const [locale, setLocaleState] = useState(() => initialLocale || getInitialLocale());
   const dict = locales[locale] ?? en;
+
+  const setLocale = useCallback((next: string) => {
+    if (!locales[next]) return;
+    setLocaleState(next);
+    localStorage.setItem(STORAGE_KEY, next);
+  }, []);
 
   const t = useCallback(
     (key: string, params?: Record<string, string | number>): string => {
       const template = resolve(dict, key);
       if (template === undefined) {
-        // Fallback to English
         const enTemplate = resolve(en, key);
         if (enTemplate === undefined) return key;
         if (!params) return enTemplate;
@@ -42,7 +58,7 @@ export function I18nProvider({ locale, children }: { locale: string; children: R
   );
 
   return (
-    <I18nContext.Provider value={{ locale, t }}>
+    <I18nContext.Provider value={{ locale, setLocale, t }}>
       {children}
     </I18nContext.Provider>
   );
