@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  useAccount, useConnect, useDisconnect,
+  useConnection, useConnect, useDisconnect,
   useWriteContract, useReadContract, useWatchContractEvent,
   useWaitForTransactionReceipt,
 } from "wagmi";
@@ -17,10 +17,10 @@ const FHEVM_CONFIG = {
 };
 
 export function useSilentBid() {
-  const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { writeContractAsync, data: txHash, isPending } = useWriteContract();
+  const { address, isConnected } = useConnection();
+  const { mutate: connect } = useConnect();
+  const { mutate: disconnect } = useDisconnect();
+  const { mutateAsync: writeContractAsync, data: txHash, isPending } = useWriteContract();
 
   const { isSuccess: txConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,

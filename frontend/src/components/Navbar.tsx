@@ -1,15 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useConnection, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { useI18n } from '../i18n';
 import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   const location = useLocation();
-  const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { address, isConnected } = useConnection();
+  const { mutate: connect } = useConnect();
+  const { mutate: disconnect } = useDisconnect();
   const { t } = useI18n();
 
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';

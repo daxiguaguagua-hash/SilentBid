@@ -1,12 +1,12 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import { useI18n } from '../i18n';
 
 const stagger = (i: number) => ({ duration: 0.4, delay: i * 0.1 });
 
 export default function Dashboard() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const { t } = useI18n();
 
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';

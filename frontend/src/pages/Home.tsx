@@ -1,15 +1,15 @@
 import { motion } from 'motion/react';
 import { Shield, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAccount, useConnect } from 'wagmi';
+import { useConnection, useConnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { useI18n } from '../i18n';
 
 const stagger = (i: number) => ({ duration: 0.5, delay: i * 0.1 });
 
 export default function Home() {
-  const { isConnected } = useAccount();
-  const { connect } = useConnect();
+  const { isConnected } = useConnection();
+  const { mutate: connect } = useConnect();
   const { t } = useI18n();
 
   return (
