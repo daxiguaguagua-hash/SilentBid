@@ -10,7 +10,7 @@ SilentBid must stay demo-ready on Sepolia:
 flowchart TD
   A["Open Chrome localhost:5173"] --> B["MetaMask on Sepolia"]
   B --> C["FHEVM ready"]
-  C --> D["Bid encrypted"]
+  C --> D["Place Private Bid"]
   D --> E["MetaMask confirm"]
   E --> F["BidSubmitted event"]
   F --> G["Bids count refreshes"]
@@ -55,7 +55,7 @@ Use real Chrome for wallet flows.
 | Open `http://localhost:5173/` | App loads |
 | Connect MetaMask on Sepolia | Account shown |
 | Wait for FHEVM | `FHEVM ready` |
-| Click `Bid (encrypted)` | MetaMask transaction request opens |
+| Click `Place Private Bid` | MetaMask transaction request opens |
 | Confirm | Transaction hash appears |
 | Wait for confirmation | `Bids` increments |
 

@@ -131,7 +131,7 @@ Note: the encrypted browser demo is verified on Sepolia with Zama's hosted relay
 2. Connect MetaMask on Sepolia.
 3. Wait for `FHEVM ready`.
 4. Enter `100` BID Credits.
-5. Click `Bid (encrypted)`.
+5. Click `Place Private Bid`.
 6. Confirm in MetaMask.
 7. Verify that `Bids` increments after confirmation.
 
