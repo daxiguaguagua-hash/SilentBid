@@ -57,6 +57,7 @@ const zhCN: Locale = {
     fheLabel: "全同态加密",
     filterActive: "进行中",
     filterResolved: "已结束",
+        bidCount: "出价数: ",
     card: {
       badge: "实时拍卖",
       title: "SilentBid 拍卖",
@@ -64,6 +65,7 @@ const zhCN: Locale = {
       description: "基于 Zama FHEVM 的密封竞价拍卖。所有出价在到达合约之前均已加密。",
       statusLabel: "状态",
       statusValue: "进行中",
+        statusResolved: "已结束",
       viewDetails: "查看详情",
     },
     banner: {

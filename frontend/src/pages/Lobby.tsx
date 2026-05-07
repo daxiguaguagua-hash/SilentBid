@@ -1,10 +1,24 @@
 import { motion } from 'motion/react';
-import { Lock } from 'lucide-react';
+import { Lock, CheckCircle, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useReadContract } from 'wagmi';
 import { useI18n } from '../i18n';
+import ABI from '../SilentBid.abi.json';
+
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '') as `0x${string}`;
 
 export default function Lobby() {
   const { t } = useI18n();
+
+  const { data: ended } = useReadContract({
+    address: CONTRACT_ADDRESS, abi: ABI, functionName: 'ended',
+  });
+  const { data: bidCount } = useReadContract({
+    address: CONTRACT_ADDRESS, abi: ABI, functionName: 'bidCount',
+  });
+
+  const isClosed = Boolean(ended);
+  const bidCountLabel = String((bidCount as bigint | number | undefined) ?? 0);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-16 md:px-10">
@@ -32,10 +46,14 @@ export default function Lobby() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60"
+          className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em]"
         >
-          <button className="text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8">{t("lobby.filterActive")}</button>
-          <button className="hover:opacity-100 transition-opacity">{t("lobby.filterResolved")}</button>
+          <span className={isClosed ? "opacity-40" : "text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8"}>
+            {t("lobby.filterActive")}
+          </span>
+          <span className={isClosed ? "text-secondary opacity-100 underline decoration-secondary/40 underline-offset-8" : "opacity-40"}>
+            {t("lobby.filterResolved")}
+          </span>
         </motion.div>
       </header>
 
@@ -49,11 +67,15 @@ export default function Lobby() {
         >
           <div className="relative aspect-[3/4] overflow-hidden bg-surface-container mb-6 shadow-inner">
             <div className="w-full h-full bg-gradient-to-br from-primary/5 to-tertiary/10 flex items-center justify-center">
-              <Lock className="w-16 h-16 text-primary/20 transition-all duration-700 group-hover:text-secondary/40 group-hover:scale-110" />
+              {isClosed ? (
+                <CheckCircle className="w-16 h-16 text-secondary/30 transition-all duration-700 group-hover:text-secondary/50 group-hover:scale-110" />
+              ) : (
+                <Lock className="w-16 h-16 text-primary/20 transition-all duration-700 group-hover:text-secondary/40 group-hover:scale-110" />
+              )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="absolute top-6 left-6 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface">
-              {t("lobby.card.badge")}
+              {isClosed ? t("lobby.card.badge") : t("lobby.card.badge")}
             </div>
           </div>
 
@@ -67,12 +89,26 @@ export default function Lobby() {
               </span>
             </div>
 
-            <p className="text-on-surface-variant text-sm leading-relaxed line-clamp-2 font-sans opacity-80">{t("lobby.card.description")}</p>
+            <p className="text-on-surface-variant text-sm leading-relaxed line-clamp-2 font-sans opacity-80">
+              {t("lobby.card.description")}
+            </p>
 
             <div className="pt-4 flex items-center justify-between border-t border-black/5">
               <div className="flex flex-col">
                 <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 mb-1">{t("lobby.card.statusLabel")}</span>
-                <span className="font-display text-lg italic">{t("lobby.card.statusValue")}</span>
+                <span className="font-display text-lg italic flex items-center gap-2">
+                  {isClosed ? (
+                    <>
+                      <Clock className="w-4 h-4 text-secondary/60" />
+                      {t("lobby.card.statusResolved")}
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+                      {t("lobby.card.statusValue")}
+                    </>
+                  )}
+                </span>
               </div>
               <Link
                 to="/auction/live"
@@ -81,6 +117,10 @@ export default function Lobby() {
                 {t("lobby.card.viewDetails")}
                 <span className="inline-block transition-transform duration-300 group-hover/link:translate-x-1">&rarr;</span>
               </Link>
+            </div>
+
+            <div className="text-[9px] font-mono text-on-surface-variant opacity-50 pt-1">
+              {t("lobby.bidCount")}{bidCountLabel}
             </div>
           </div>
         </motion.div>

@@ -55,6 +55,7 @@ const en = {
     fheLabel: "Fully Homomorphic Encryption",
     filterActive: "Active",
     filterResolved: "Resolved",
+        bidCount: "Bids: ",
     card: {
       badge: "Live Auction",
       title: "SilentBid Auction",
@@ -62,6 +63,7 @@ const en = {
       description: "Sealed-bid auction on Zama FHEVM. All bids encrypted before reaching the contract.",
       statusLabel: "Status",
       statusValue: "Active",
+        statusResolved: "Ended",
       viewDetails: "View Details",
     },
     banner: {
