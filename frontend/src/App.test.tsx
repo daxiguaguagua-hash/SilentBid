@@ -34,9 +34,9 @@ function renderApp() {
 beforeEach(() => queryClient.clear());
 
 describe("App — disconnected state", () => {
-  it("shows SilentBid heading", () => {
+  it("shows SilentBid branding", () => {
     renderApp();
-    expect(screen.getByRole("heading", { name: "SilentBid" })).toBeInTheDocument();
+    expect(screen.getByText("SilentBid.")).toBeInTheDocument();
   });
 
   it("shows description", () => {

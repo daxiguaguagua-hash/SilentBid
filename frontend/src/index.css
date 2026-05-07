@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", serif;
+
+  --color-background: #F9F7F2;
+  --color-surface: #F2F0E9;
+  --color-on-surface: #1A1A1A;
+  --color-on-surface-variant: #5A5A5A;
+
+  --color-primary: #1A1A1A;
+  --color-on-primary: #F9F7F2;
+  --color-primary-container: #D4A373;
+  --color-on-primary-container: #F9F7F2;
+
+  --color-secondary: #3A4A3F;
+  --color-on-secondary: #F9F7F2;
+  --color-secondary-container: #A3B18A;
+  --color-on-secondary-container: #1A1A1A;
+
+  --color-tertiary: #D4A373;
+  --color-on-tertiary: #1A1A1A;
+
+  --color-outline: rgba(26, 26, 26, 0.1);
+  --color-outline-variant: rgba(26, 26, 26, 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased;
+  }
+}
+
+.editorial-card {
+  @apply bg-surface border border-outline shadow-sm transition-all duration-300;
+}
+
+.editorial-card:hover {
+  @apply border-primary/30 shadow-md;
+}
+
+.noise-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+}

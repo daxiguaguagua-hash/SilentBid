@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { hardhat, sepolia } from "wagmi/chains";
 import App from "./App";
+import "./index.css";
 
 const queryClient = new QueryClient();
 

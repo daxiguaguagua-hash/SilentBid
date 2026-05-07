@@ -4,42 +4,40 @@ test.describe("SilentBid — E2E smoke", () => {
   test("page loads with heading, metrics, and connect button", async ({ page }) => {
     await page.goto("/");
 
-    // Heading and description
-    await expect(page.getByRole("heading", { name: "SilentBid" })).toBeVisible();
+    // Branding and description
+    await expect(page.locator("nav").getByText("SilentBid.")).toBeVisible();
     await expect(page.getByText("Private bids. Public settlement.")).toBeVisible();
     await expect(page.getByText("Zama FHEVM sealed auction")).toBeVisible();
 
-    // Metrics panel (use exact match to avoid "auction" in other text)
+    // Metrics panel on Home
     await expect(page.getByText("Auction", { exact: true })).toBeVisible();
     await expect(page.getByText("Sealed bids", { exact: true })).toBeVisible();
     await expect(page.getByText("FHEVM", { exact: true })).toBeVisible();
 
-    // Connect Wallet buttons (header + center CTA — both visible when disconnected)
+    // Connect Wallet buttons (Navbar + Home CTA)
     const connectButtons = page.getByRole("button", { name: "Connect Wallet" });
     await expect(connectButtons.first()).toBeVisible();
     await expect(connectButtons).toHaveCount(2);
-
-    // Disconnected-state message
-    await expect(page.getByText("Connect to enter the auction")).toBeVisible();
   });
 
   test("disconnected state hides bid panel and developer controls", async ({ page }) => {
     await page.goto("/");
 
-    // Bid panel should NOT be visible when disconnected
+    // Bid panel should NOT be visible on Home page when disconnected
     await expect(page.getByRole("button", { name: "Place Private Bid" })).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Debug Plain Bid" })).not.toBeVisible();
     await expect(page.getByRole("button", { name: "End Auction" })).not.toBeVisible();
   });
 
-  test("Sepolia network pill is visible", async ({ page }) => {
+  test("Sepolia network is referenced", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Sepolia", { exact: true })).toBeVisible();
+    await expect(page.getByText("Sepolia / Zama FHEVM")).toBeVisible();
   });
 
-  test("sealed auction rules section is visible when disconnected", async ({ page }) => {
-    await page.goto("/");
-    // The rules are shown in the "Connect to enter the auction" empty state
+  test("auction detail page shows connect prompt when disconnected", async ({ page }) => {
+    await page.goto("/auction/live");
+    // AuctionDetail shows connect prompt when wallet not connected
+    await expect(page.getByText("Connect to enter the auction")).toBeVisible();
     await expect(page.getByText("Use a Sepolia wallet to place a private bid")).toBeVisible();
   });
 
