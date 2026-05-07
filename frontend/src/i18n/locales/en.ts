@@ -66,6 +66,22 @@ const en = {
         statusResolved: "Ended",
       viewDetails: "View Details",
     },
+    card2: {
+      badge: "Upcoming",
+      title: "RWA Portfolio Auction",
+      subtitle: "Coming Q3",
+      description: "Tokenized real-world asset portfolio auction. Institutional-grade sealed bidding with full FHE privacy guarantees.",
+      statusValue: "Pre-Launch",
+      viewDetails: "Preview",
+    },
+    card3: {
+      badge: "Resolved",
+      title: "DAO Treasury Auction",
+      subtitle: "Settled",
+      description: "Decentralized grant allocation auction. Winning bid selected through FHE comparison without exposing competing proposals.",
+      statusValue: "Finalized",
+      viewDetails: "Review",
+    },
     banner: {
       title: "Security Audit: Zama FHEVM",
       description: "All bids are processed on-chain using Zama's FHEVM. Encryption happens in the browser before the transaction leaves your wallet, ensuring zero-leakage throughout the auction lifecycle.",

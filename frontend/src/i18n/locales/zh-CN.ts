@@ -68,6 +68,22 @@ const zhCN: Locale = {
         statusResolved: "已结束",
       viewDetails: "查看详情",
     },
+    card2: {
+      badge: "即将开始",
+      title: "RWA 资产组合拍卖",
+      subtitle: "Q3 上线",
+      description: "代币化现实资产组合拍卖，面向机构的密封竞价系统，全程 FHE 隐私保护。",
+      statusValue: "筹备中",
+      viewDetails: "预览",
+    },
+    card3: {
+      badge: "已结算",
+      title: "DAO 财库拍卖",
+      subtitle: "已完成",
+      description: "去中心化拨款分配拍卖。通过 FHE 加密比较选出中标方案，竞标方案全程保密。",
+      statusValue: "已定标",
+      viewDetails: "回顾",
+    },
     banner: {
       title: "安全审计：Zama FHEVM",
       description: "所有出价均通过 Zama FHEVM 在链上处理。加密在浏览器中完成，在交易离开钱包之前即完成，确保整个拍卖生命周期零泄露。",
