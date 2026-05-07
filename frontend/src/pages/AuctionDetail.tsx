@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useSilentBid } from '../hooks/useSilentBid';
 import { useI18n } from '../i18n';
@@ -29,6 +29,9 @@ function translateStatus(raw: string, t: (k: string, p?: Record<string, string |
 const stagger = (i: number) => ({ duration: 0.4, delay: i * 0.08 });
 
 export default function AuctionDetail() {
+  const [searchParams] = useSearchParams();
+  const previewCard = searchParams.get("card"); // "upcoming" | "resolved" | null
+  const isPreview = previewCard === "upcoming" || previewCard === "resolved";
   const {
     isConnected, connect,
     instance, fhevmLabel,
@@ -54,6 +57,41 @@ export default function AuctionDetail() {
     { label: t("auction.meta.securityLabel"), val: t("auction.meta.securityValue"), accent: true },
     { label: t("auction.meta.networkLabel"), val: t("auction.meta.networkValue") },
   ];
+
+
+
+  if (isPreview) {
+    const isUpcoming = previewCard === "upcoming";
+    const dotColor = isUpcoming ? "bg-amber-400" : "bg-slate-400";
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-32 md:px-10 text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-container border border-black/10 rounded-full text-[9px] font-bold uppercase tracking-[0.3em] mb-8">
+            {isUpcoming ? "Upcoming" : "Settled"}
+          </div>
+          <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter mb-6">
+            {isUpcoming ? "RWA Portfolio Auction" : "DAO Treasury Auction"}
+          </h1>
+          <p className="text-on-surface-variant text-lg max-w-lg mx-auto mb-12 leading-relaxed font-sans">
+            {isUpcoming
+              ? "This auction is in preparation. Institutional-grade sealed bidding for tokenized real-world assets, secured by Zama FHEVM."
+              : "This auction has been settled. Winning bid was selected through FHE comparison without exposing competing proposals on-chain."}
+          </p>
+          <div className="flex items-center justify-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
+            <span className="flex items-center gap-2">
+              <span className={"w-2 h-2 rounded-full inline-block " + dotColor} />
+              {isUpcoming ? "Pre-Launch" : "Finalized"}
+            </span>
+            <span>Zama FHEVM</span>
+            <span>Sepolia</span>
+          </div>
+          <Link to="/lobby" className="inline-block mt-16 px-10 py-3 border border-black/10 text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 rounded-sm">
+            ← Back to Archive
+          </Link>
+        </motion.div>
+      </div>
+    );
+
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 md:px-10">
@@ -356,7 +394,7 @@ export default function AuctionDetail() {
                 {txHash && (
                   <div className="flex justify-between text-xs">
                     <span className="opacity-50">{t("auction.evidence.latestTx")}</span>
-                    <span className="font-bold tabular-nums">{txHash.slice(0, 18)}...</span>
+                    <span className="font-bold tabular-nums">{txHash?.slice(0, 18) ?? "--"}...</span>
                   </div>
                 )}
               </div>
@@ -386,4 +424,5 @@ export default function AuctionDetail() {
       </div>
     </div>
   );
+}
 }

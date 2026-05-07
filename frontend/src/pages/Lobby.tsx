@@ -163,7 +163,7 @@ export default function Lobby() {
         <AuctionCard
           t={t}
           cardKey="card2"
-          linkTo="/auction/live"
+          linkTo="/auction/live?card=upcoming"
           statusIcon={<Hourglass className="w-5 h-5" />}
           statusClass="text-amber-500/70"
         />
@@ -172,7 +172,7 @@ export default function Lobby() {
         <AuctionCard
           t={t}
           cardKey="card3"
-          linkTo="/auction/live"
+          linkTo="/auction/live?card=resolved"
           statusIcon={<Archive className="w-5 h-5" />}
           statusClass="text-slate-400/70"
         />
