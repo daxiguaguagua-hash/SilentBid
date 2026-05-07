@@ -1,5 +1,14 @@
 # STATUS
 
+## 2026-05-07 22:20 Demo auction redeploy (二号工作流)
+- Deployed new SilentBid to Sepolia: `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` (7-day duration)
+- Updated contract address in: deploy.yml, deploy.json, frontend/.env, README.md, README.en.md
+- deploy.js now supports `AUCTION_DURATION_DAYS` env var (default 7)
+- Proof section tables retain historical `0xAB06...094d` matching proof tx `to` field
+- All tests pass: 10 Hardhat + 10 vitest + typecheck + build
+- Pushed to main → GitHub Actions auto-deploy to EC2
+- Pending: Chrome verification at `http://3.21.154.136/auction/live`
+
 ## 2026-05-07 Official OpenBuild bounty alignment
 - Reviewed official challenge page: `https://openbuild.xyz/learn/challenges/2095330503`.
 - Confirmed submission requirements: working Zama Protocol dApp demo, smart contract + frontend, clear docs, 2-minute real-person video, deadline May 10, 2026 23:59 AOE.
