@@ -9,6 +9,17 @@ concurrency:
   group: silentbid-deploy
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ROLE_ARN: arn:aws:iam::297041783557:role/GitHubActionsSilentBidDeploy
+  DEPLOY_BUCKET: silentbid-deploy-artifacts-297041783557-us-east-2
+  DEPLOY_INSTANCE_ID: i-01ea7be10f304c673
+  VITE_CONTRACT_ADDRESS: 0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
+
 jobs:
   test:
     name: Test contracts and frontend
@@ -38,12 +49,10 @@ jobs:
 
       - name: Test frontend
         working-directory: frontend
-        env:
-          VITE_CONTRACT_ADDRESS: 0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
         run: npm run test
 
   deploy:
-    name: Deploy frontend to EC2
+    name: Deploy frontend to AWS
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main'
@@ -65,21 +74,27 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
-        env:
-          VITE_CONTRACT_ADDRESS: 0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
         run: npm run build
 
-      - name: Prepare SSH key
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/silentbid_deploy
-          chmod 600 ~/.ssh/silentbid_deploy
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload artifact
+      - name: Package artifact
         run: tar -C frontend/dist -czf /tmp/silentbid-dist.tgz .
 
-      - name: Deploy over SSH
+      - name: Upload artifact to S3
+        run: aws s3 cp /tmp/silentbid-dist.tgz "s3://${DEPLOY_BUCKET}/silentbid-dist-${GITHUB_SHA}.tgz"
+
+      - name: Deploy through SSM
         run: |
-          scp -i ~/.ssh/silentbid_deploy /tmp/silentbid-dist.tgz "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/silentbid-dist.tgz"
-          ssh -i ~/.ssh/silentbid_deploy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" 'sudo mkdir -p /var/www/silentbid && sudo tar -xzf /tmp/silentbid-dist.tgz -C /var/www/silentbid && sudo chown -R www-data:www-data /var/www/silentbid && sudo systemctl reload nginx'
+          COMMAND_ID="$(aws ssm send-command \
+            --instance-ids "${DEPLOY_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy SilentBid ${GITHUB_SHA}" \
+            --parameters commands="aws s3 cp s3://${DEPLOY_BUCKET}/silentbid-dist-${GITHUB_SHA}.tgz /tmp/silentbid-dist.tgz,sudo mkdir -p /var/www/silentbid,sudo rm -rf /var/www/silentbid/*,sudo tar -xzf /tmp/silentbid-dist.tgz -C /var/www/silentbid,sudo chown -R nginx:nginx /var/www/silentbid,sudo systemctl reload nginx" \
+            --query 'Command.CommandId' \
+            --output text)"
+          aws ssm wait command-executed --command-id "${COMMAND_ID}" --instance-id "${DEPLOY_INSTANCE_ID}"
