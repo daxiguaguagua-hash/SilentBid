@@ -1,5 +1,12 @@
 # STATUS
 
+## 2026-05-07 09:40 Codex review + Claude Code fixes
+- Fixed HIGH: `allowBidDecryption` / `allowWinnerDecryption` now require `ended == true` before granting decryption ACL. Previously anyone could decrypt mid-auction.
+- Synced button wording: docs referenced "Bid encrypted" but UI says "Place Private Bid". Updated README, DEMO_SCRIPT, WORKFLOW.
+- Updated SUBMISSION.md checklist with current status.
+- Verified: root `npm test` 10 passing; frontend `npm run test` typecheck/build/7 passing.
+- Remaining: Chrome smoke, video, GitHub repo creation, Google Form.
+
 ## 2026-05-06 21:40 Codex docs/planning
 - Added `WORKFLOW.md` with agent responsibilities, Chrome/MetaMask smoke flow, verification commands, known pitfalls, context rules, and definition of done.
 - Added `ROADMAP.md` with submission blockers, quality improvements, stretch ideas, demo narrative, and final release checklist.

@@ -77,10 +77,11 @@ VITE_CONTRACT_ADDRESS=0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
 
 | Item | Status |
 |---|---|
-| GitHub repository link | TODO |
+| GitHub repository link | Needs repo creation |
 | Contract explorer link | Ready |
-| 2-minute video link | TODO |
+| 2-minute video link | Pending recording |
 | README updated | Ready |
-| Tests passing | Ready |
-| Final Chrome smoke before submit | TODO |
-| Google Form submitted | TODO |
+| Tests passing | Verified 2026-05-07 (10 contract + 7 frontend) |
+| Decryption gate fix | Done (require ended) |
+| Final Chrome smoke before submit | Pending |
+| Google Form submitted | Pending |
