@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -24,6 +25,8 @@ function translateStatus(raw: string, t: (k: string, p?: Record<string, string |
   return raw;
 }
 
+const stagger = (i: number) => ({ duration: 0.4, delay: i * 0.08 });
+
 export default function AuctionDetail() {
   const {
     isConnected, connect,
@@ -35,17 +38,33 @@ export default function AuctionDetail() {
     txHash, isPending,
   } = useSilentBid();
   const { t } = useI18n();
+  const [inputFocused, setInputFocused] = useState(false);
 
   const UINT32_MAX = 2 ** 32 - 1;
   const canBid = isConnected && instance && isBidAmountValid && !ended && isActive;
 
+  // Reset focus state when bid panel changes
+  useEffect(() => { setInputFocused(false); }, [isConnected]);
+
+  const sidebarItems = [
+    { label: t("auction.meta.typeLabel"), val: t("auction.meta.typeValue") },
+    { label: t("auction.meta.unitLabel"), val: t("auction.meta.unitValue") },
+    { label: t("auction.meta.securityLabel"), val: t("auction.meta.securityValue"), accent: true },
+    { label: t("auction.meta.networkLabel"), val: t("auction.meta.networkValue") },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 md:px-10">
       {/* Breadcrumb & Header */}
-      <div className="mb-16 border-b border-black/10 pb-12">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-16 border-b border-black/10 pb-12"
+      >
         <div className="flex items-center gap-4 text-on-surface-variant font-sans text-[9px] font-bold uppercase tracking-[0.3em] mb-6 opacity-40">
-          <Link to="/lobby" className="hover:text-primary transition-colors">{t("auction.breadcrumb.archive")}</Link>
-          <div className="w-1 h-1 bg-black rounded-full" />
+          <Link to="/lobby" className="hover:text-secondary transition-colors">{t("auction.breadcrumb.archive")}</Link>
+          <div className="w-1 h-1 bg-secondary rounded-full" />
           <span className="text-on-surface">{t("auction.breadcrumb.current")}</span>
         </div>
 
@@ -54,17 +73,17 @@ export default function AuctionDetail() {
             <h1 className="font-display text-6xl md:text-8xl font-bold text-on-surface mb-6 tracking-tighter leading-none">{t("auction.title")}</h1>
             <p className="text-on-surface-variant font-sans text-lg leading-relaxed opacity-80">
               {t("auction.description")}
-              <span className="italic font-display text-primary mx-1">{t("auction.descriptionHighlight")}</span>
+              <span className="italic font-display text-secondary mx-1">{t("auction.descriptionHighlight")}</span>
             </p>
           </div>
           <div className="flex flex-col items-end shrink-0 border-l border-black/10 pl-8 pb-1">
             <span className="font-sans text-[9px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-2 opacity-40">{t("auction.contract.label")}</span>
-            <span className="font-display italic text-lg text-primary">
+            <span className="font-display italic text-lg text-secondary">
               {shortContract}
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
@@ -74,6 +93,7 @@ export default function AuctionDetail() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
               className="editorial-card p-12 relative overflow-hidden text-center"
             >
               <div className="absolute inset-0 noise-texture pointer-events-none" />
@@ -81,16 +101,21 @@ export default function AuctionDetail() {
               <p className="text-on-surface-variant mb-8">{t("auction.connectPrompt.subtitle")}</p>
               <button
                 onClick={() => connect()}
-                className="px-12 py-4 bg-primary text-on-primary font-sans text-[11px] font-bold uppercase tracking-widest rounded-sm hover:scale-[0.98] transition-all"
+                className="group px-12 py-4 bg-primary text-on-primary font-sans text-[11px] font-bold uppercase tracking-widest rounded-sm hover:scale-[0.98] transition-all duration-300 inline-flex items-center gap-2"
               >
                 {t("auction.connectPrompt.cta")}
+                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
               </button>
             </motion.div>
           ) : (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="editorial-card p-12 relative overflow-hidden"
+              transition={{ duration: 0.5 }}
+              className={cn(
+                "editorial-card p-12 relative overflow-hidden transition-shadow duration-500",
+                inputFocused && "shadow-lg border-secondary/20"
+              )}
             >
               <div className="absolute inset-0 noise-texture pointer-events-none" />
 
@@ -98,8 +123,8 @@ export default function AuctionDetail() {
                 <div className="flex items-baseline gap-4">
                   <h3 className="font-display text-2xl font-bold text-on-surface italic tracking-tight">{t("auction.terminal.title")}</h3>
                   <span className={cn(
-                    "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm",
-                    ended ? "bg-black/5 text-on-surface-variant" : "bg-tertiary/10 text-tertiary"
+                    "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm transition-colors duration-300",
+                    ended ? "bg-black/5 text-on-surface-variant" : "bg-secondary/10 text-secondary"
                   )}>
                     {t(STATUS_KEY[statusLabel] || "auction.status.active")}
                   </span>
@@ -123,31 +148,51 @@ export default function AuctionDetail() {
                       step="1"
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
-                      className="w-full bg-transparent border-b border-black/20 pb-4 font-display text-6xl text-on-surface focus:outline-none focus:border-tertiary transition-all placeholder:opacity-10"
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => setInputFocused(false)}
+                      className={cn(
+                        "w-full bg-transparent border-b-2 pb-4 font-display text-6xl text-on-surface focus:outline-none transition-all duration-300 placeholder:opacity-10",
+                        inputFocused
+                          ? "border-secondary"
+                          : "border-black/20 hover:border-black/30"
+                      )}
                       placeholder="000"
                     />
-                    <div className="absolute right-0 bottom-4 font-display text-2xl italic text-on-surface-variant tracking-tighter">
+                    <div className="absolute right-0 bottom-4 font-display text-2xl italic text-on-surface-variant tracking-tighter transition-opacity duration-300" style={{ opacity: inputFocused ? 0.6 : 0.3 }}>
                       Credits
                     </div>
                   </div>
                   {!isBidAmountValid && (
-                    <div className="text-[#a13d3d] text-xs mt-3">{t("auction.form.error", { max: UINT32_MAX })}</div>
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-[#a13d3d] text-xs mt-3"
+                    >
+                      {t("auction.form.error", { max: UINT32_MAX })}
+                    </motion.div>
                   )}
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-8 items-center pt-8">
-                  <button
+                  <motion.button
                     onClick={handleBid}
                     disabled={!canBid || isPending}
+                    whileHover={canBid && !isPending ? { scale: 1.01 } : {}}
+                    whileTap={canBid && !isPending ? { scale: 0.98 } : {}}
                     className={cn(
-                      "flex-grow h-16 font-sans text-xs font-bold uppercase tracking-[0.3em] transition-all rounded-sm",
+                      "flex-grow h-16 font-sans text-xs font-bold uppercase tracking-[0.3em] transition-all duration-300 rounded-sm relative overflow-hidden",
                       canBid && !isPending
-                        ? "bg-primary text-on-primary hover:brightness-110 active:scale-[0.98]"
+                        ? "bg-primary text-on-primary hover:bg-secondary shadow-sm hover:shadow-md"
                         : "bg-on-surface/20 text-on-surface-variant cursor-not-allowed"
                     )}
                   >
-                    {isPending ? t("auction.form.confirming") : t("auction.form.submit")}
-                  </button>
+                    <span className="relative z-10">
+                      {isPending ? t("auction.form.confirming") : t("auction.form.submit")}
+                    </span>
+                    {canBid && !isPending && (
+                      <div className="absolute inset-0 bg-secondary opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                    )}
+                  </motion.button>
                   <p className="text-[10px] text-on-surface-variant font-sans max-w-[200px] leading-relaxed opacity-60 italic">
                     * {t("auction.form.notice")}
                   </p>
@@ -160,7 +205,13 @@ export default function AuctionDetail() {
 
           {/* Activity Log */}
           {events.length > 0 && (
-            <div className="space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-8"
+            >
               <div className="flex items-baseline justify-between border-b border-black/10 pb-4">
                 <h3 className="font-display text-2xl font-bold italic tracking-tight">{t("auction.activity.title")}</h3>
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">{t("auction.activity.stream")}</span>
@@ -168,24 +219,35 @@ export default function AuctionDetail() {
 
               <div className="space-y-0 text-sm">
                 {events.map((event, idx) => (
-                  <div key={idx} className="grid grid-cols-3 py-6 border-b border-black/5 items-center font-sans tracking-tight">
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    className="grid grid-cols-3 py-6 border-b border-black/5 items-center font-sans tracking-tight"
+                  >
                     <div className="flex items-center gap-4">
-                      <div className="w-1.5 h-1.5 bg-tertiary rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-secondary rounded-full" />
                       <span className="font-bold">{event}</span>
                     </div>
                     <div className="text-center">
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-40">{t("auction.activity.sealed")}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-secondary/60">{t("auction.activity.sealed")}</span>
                     </div>
                     <div className="text-right opacity-40 italic">{t("auction.activity.recent")}</div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Developer Controls */}
           {isConnected && (
-            <div className="p-8 bg-black/5 border border-black/10 rounded-sm">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="p-8 bg-black/[0.03] border border-black/10 rounded-sm"
+            >
               <div className="flex items-center justify-between gap-8 flex-wrap">
                 <div>
                   <h2 className="font-display text-xl font-bold mb-1">{t("auction.dev.title")}</h2>
@@ -195,7 +257,7 @@ export default function AuctionDetail() {
                   <button
                     onClick={handleBidTrivial}
                     disabled={isPending || !isBidAmountValid}
-                    className="px-6 py-2 border border-black/10 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all rounded-sm disabled:opacity-30"
+                    className="px-6 py-2 border border-black/10 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 rounded-sm disabled:opacity-30"
                   >
                     {t("auction.dev.debugBid")}
                   </button>
@@ -203,30 +265,43 @@ export default function AuctionDetail() {
                     <button
                       onClick={handleEndAuction}
                       disabled={isPending}
-                      className="px-6 py-2 bg-[#a13d3d] text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:opacity-80 transition-all rounded-sm disabled:opacity-30"
+                      className="px-6 py-2 bg-[#a13d3d] text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:opacity-80 transition-all duration-300 rounded-sm disabled:opacity-30"
                     >
                       {t("auction.dev.endAuction")}
                     </button>
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
         {/* Auction Metadata (Right Sidebar) */}
         <div className="lg:col-span-4 space-y-12">
-          <div className="editorial-card aspect-[4/5] overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-primary/5 to-tertiary/10 flex items-center justify-center">
-              <div className="text-center">
-                <div className="font-display text-6xl font-bold italic tracking-tighter mb-4 opacity-20">SB</div>
-                <div className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">SilentBid</div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="editorial-card aspect-[4/5] overflow-hidden group"
+          >
+            <div className="w-full h-full bg-gradient-to-br from-secondary/5 to-tertiary/10 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-gradient-to-t from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="text-center relative z-10">
+                <div className="font-display text-6xl font-bold italic tracking-tighter mb-4 text-secondary/20 transition-all duration-700 group-hover:text-secondary/30 group-hover:scale-110">SB</div>
+                <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-secondary/40">SilentBid</div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="space-y-12 pt-8 border-t border-black/10">
-            <div className="grid grid-cols-2 gap-12">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={stagger(0)}
+              className="grid grid-cols-2 gap-12"
+            >
               <div className="space-y-2">
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">{t("auction.meta.auction")}</span>
                 <div className="font-display text-4xl italic tracking-tighter">{t(STATUS_KEY[statusLabel] || "auction.status.active")}</div>
@@ -235,25 +310,32 @@ export default function AuctionDetail() {
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">{t("auction.meta.sealedBids")}</span>
                 <div className="font-display text-4xl italic tracking-tighter">{bidCount}</div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="space-y-6">
-              {[
-                { label: t("auction.meta.typeLabel"), val: t("auction.meta.typeValue") },
-                { label: t("auction.meta.unitLabel"), val: t("auction.meta.unitValue") },
-                { label: t("auction.meta.securityLabel"), val: t("auction.meta.securityValue"), accent: true },
-                { label: t("auction.meta.networkLabel"), val: t("auction.meta.networkValue") },
-              ].map((item, idx) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={stagger(1)}
+              className="space-y-6"
+            >
+              {sidebarItems.map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between font-sans text-[11px] font-semibold border-b border-black/5 pb-3 py-1">
                   <span className="uppercase tracking-[0.1em] opacity-50 font-bold text-[9px]">{item.label}</span>
-                  <span className={cn(item.accent ? "text-tertiary" : "text-on-surface")}>
+                  <span className={cn(item.accent ? "text-secondary font-bold" : "text-on-surface")}>
                     {item.val}
                   </span>
                 </div>
               ))}
-            </div>
+            </motion.div>
 
-            <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={stagger(2)}
+              className="space-y-4"
+            >
               <h4 className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">{t("auction.evidence.title")}</h4>
               <div className="space-y-3">
                 <div className="flex justify-between text-xs">
@@ -267,9 +349,15 @@ export default function AuctionDetail() {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={stagger(3)}
+              className="space-y-4"
+            >
               <h4 className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">{t("auction.rules.title")}</h4>
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
@@ -281,7 +369,7 @@ export default function AuctionDetail() {
                   <p className="opacity-60">{t("auction.rules.hiddenDesc")}</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
