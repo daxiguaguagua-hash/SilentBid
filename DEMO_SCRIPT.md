@@ -10,6 +10,8 @@ Record a short human-presented demo that proves three things:
 | Zama value | Bids are encrypted before reaching the contract |
 | Working demo | Sepolia transaction succeeds and `Bids` increments |
 
+OpenBuild requires a 2-minute video with a real person presenting on camera. AI-generated videos, avatars, and synthetic voices are not accepted.
+
 ## Timeline
 
 | Time | Scene | Script |
@@ -20,6 +22,15 @@ Record a short human-presented demo that proves three things:
 | 0:55-1:25 | Screen recording | I connect MetaMask on Sepolia, enter 100 BID Credits, and click Place Private Bid. The Zama SDK creates encrypted input and MetaMask confirms the transaction. |
 | 1:25-1:45 | Screen recording | After confirmation, the app receives the transaction and the bid count increases. The contract processed the encrypted bid without revealing the bid amount on-chain. |
 | 1:45-2:00 | Face camera | This demonstrates how FHE enables private but verifiable on-chain applications. Thank you for watching. |
+
+## Closed Auction Add-On
+
+If the auction has already been closed, use this version for the final 20 seconds:
+
+| Time | Scene | Script |
+|---:|---|---|
+| 1:25-1:40 | Screen recording | The auction is now closed. The public state still shows the contract, status, and bid count, while plaintext losing bids are not exposed. |
+| 1:40-2:00 | Face camera | This is the core privacy model: the chain remains auditable, but sensitive bid values stay confidential. SilentBid shows how Zama FHEVM can support practical private finance workflows. |
 
 ## Full English Script
 
@@ -46,6 +57,18 @@ SilentBid shows how FHE can bring real privacy to blockchain applications while 
 | Return to app | `Encrypted bid submitted: ...` |
 | Final proof | `Bids` count increased |
 
+Use local desktop Chrome with MetaMask for every wallet step. The in-app browser can only be used for disconnected UI checks and screenshots without wallet interaction.
+
+## Official Judging Points To Mention
+
+| Criterion | One sentence |
+|---|---|
+| Innovation | SilentBid brings sealed bidding to public blockchain without revealing bid amounts. |
+| Compliance | It keeps public audit data visible while protecting sensitive values. |
+| Real-world value | The same pattern applies to RWA auctions, DAO procurement, and confidential tenders. |
+| Zama implementation | The frontend encrypts bid inputs and the contract computes over encrypted values. |
+| Product quality | The project includes a working frontend, Sepolia contract, tests, and documentation. |
+
 ## Avoid Saying
 
 | Avoid | Better |
@@ -54,4 +77,3 @@ SilentBid shows how FHE can bring real privacy to blockchain applications while 
 | "The contract decrypts the bid" | "The contract computes on encrypted values" |
 | "100 ETH" | "100 BID Credits" |
 | "Localhost relayer" | "Zama Sepolia relayer" |
-
