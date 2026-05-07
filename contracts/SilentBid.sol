@@ -19,6 +19,7 @@ contract SilentBid is ZamaEthereumConfig {
 
     event BidSubmitted(address indexed bidder);
     event AuctionEnded(address indexed closer);
+    event AuctionRestarted(address indexed owner, uint256 newDuration);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner");
@@ -89,6 +90,22 @@ contract SilentBid is ZamaEthereumConfig {
         emit AuctionEnded(msg.sender);
     }
 
+    /// @notice [TEST-ONLY] Restart the auction after it has ended.
+    /// @dev This is a development/testing convenience. In production,
+    /// a new auction would be deployed as a fresh contract instance.
+    /// Controlled by VITE_ENABLE_TEST_CONTROLS on the frontend.
+    function restartAuction(uint256 _duration) public onlyOwner {
+        require(ended, "Auction not ended");
+        ended = false;
+        endTime = block.timestamp + _duration;
+        _highestBid = FHE.asEuint32(0);
+        FHE.allowThis(_highestBid);
+        _winner = FHE.asEaddress(address(0));
+        FHE.allowThis(_winner);
+        bidCount = 0;
+        emit AuctionRestarted(msg.sender, _duration);
+    }
+
     /// @notice Allow any user to decrypt the highest bid (only after auction ends)
     function allowBidDecryption(address user) public {
         require(ended, "Auction not ended");
@@ -117,7 +134,8 @@ contract SilentBid is ZamaEthereumConfig {
 
     // --- Test helpers ---
 
-    /// @dev Test-only: submit a bid using trivial encryption
+    /// @dev [TEST-ONLY] Submit a bid with plaintext encryption (no FHE privacy).
+    /// Controlled by VITE_ENABLE_TEST_CONTROLS on the frontend.
     function bidTrivial(uint32 plainBid) public auctionActive {
         euint32 newBid = FHE.asEuint32(plainBid);
         FHE.allowThis(newBid);

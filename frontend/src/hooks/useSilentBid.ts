@@ -12,6 +12,8 @@ import { parseBidAmount } from "../lib/bids";
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "") as `0x${string}`;
 
+const ENABLE_TEST = import.meta.env.VITE_ENABLE_TEST_CONTROLS === "true";
+
 const FHEVM_CONFIG = {
   11155111: SepoliaConfigV2,
 };
@@ -160,6 +162,22 @@ export function useSilentBid() {
     }
   };
 
+  const handleRestartAuction = async () => {
+    try {
+      const ONE_HOUR = 3600;
+      setStatus("Waiting for wallet confirmation...");
+      const hash = await writeContractAsync({
+        address: CONTRACT_ADDRESS,
+        abi: ABI,
+        functionName: "restartAuction",
+        args: [ONE_HOUR],
+      });
+      setStatus(`Auction restarted: ${hash.slice(0, 10)}...`);
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
+  };
+
   return {
     // wallet
     address, isConnected, connect: () => connect({ connector: injected() }), disconnect,
@@ -172,8 +190,9 @@ export function useSilentBid() {
     // derived
     statusLabel, status, shortAddress, shortContract, events,
     // actions
-    handleBid, handleBidTrivial, handleEndAuction,
+    handleBid, handleBidTrivial, handleEndAuction, handleRestartAuction,
     // tx
+    ENABLE_TEST,
     txHash, isPending,
   };
 }

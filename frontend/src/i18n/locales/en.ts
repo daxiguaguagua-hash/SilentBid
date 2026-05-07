@@ -112,6 +112,7 @@ const en = {
       description: "Plain bids are only for debugging state refresh and contract wiring.",
       debugBid: "Debug Plain Bid",
       endAuction: "End Auction",
+        restartAuction: "Restart Auction",
     },
     meta: {
       auction: "Auction",
@@ -175,6 +176,7 @@ const en = {
     bidSubmitted: "Encrypted bid submitted: {hash}",
     trivialSubmitted: "Trivial bid submitted: {hash}",
     endSubmitted: "End auction submitted: {hash}",
+    restarted: "Auction restarted: {hash}",
     error: "Error: {message}",
   },
 } as const;

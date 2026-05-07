@@ -114,6 +114,7 @@ const zhCN: Locale = {
       description: "明文出价仅用于调试状态刷新和合约连接。",
       debugBid: "调试明文出价",
       endAuction: "结束拍卖",
+        restartAuction: "重启拍卖",
     },
     meta: {
       auction: "拍卖",
@@ -177,6 +178,7 @@ const zhCN: Locale = {
     bidSubmitted: "加密出价已提交: {hash}",
     trivialSubmitted: "明文出价已提交: {hash}",
     endSubmitted: "结束拍卖已提交: {hash}",
+    restarted: "拍卖已重启: {hash}",
     error: "错误: {message}",
   },
 };

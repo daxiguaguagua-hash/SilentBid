@@ -21,6 +21,7 @@ function translateStatus(raw: string, t: (k: string, p?: Record<string, string |
   if (raw.startsWith("Encrypted bid submitted:")) return t("status.bidSubmitted", { hash: raw.split(": ")[1] || "" });
   if (raw.startsWith("Trivial bid submitted:")) return t("status.trivialSubmitted", { hash: raw.split(": ")[1] || "" });
   if (raw.startsWith("End auction submitted:")) return t("status.endSubmitted", { hash: raw.split(": ")[1] || "" });
+  if (raw.startsWith("Auction restarted:")) return t("status.restarted", { hash: raw.split(": ")[1] || "" });
   if (raw.startsWith("Error:")) return t("status.error", { message: raw.slice(7) });
   return raw;
 }
@@ -34,8 +35,9 @@ export default function AuctionDetail() {
     bidCount, ended, isActive, isOwner,
     bidAmount, setBidAmount, isBidAmountValid,
     statusLabel, status, shortContract, events,
-    handleBid, handleBidTrivial, handleEndAuction,
+    handleBid, handleBidTrivial, handleEndAuction, handleRestartAuction,
     txHash, isPending,
+    ENABLE_TEST,
   } = useSilentBid();
   const { t } = useI18n();
   const [inputFocused, setInputFocused] = useState(false);
@@ -241,7 +243,7 @@ export default function AuctionDetail() {
           )}
 
           {/* Developer Controls */}
-          {isConnected && (
+          {isConnected && ENABLE_TEST && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -270,7 +272,16 @@ export default function AuctionDetail() {
                       {t("auction.dev.endAuction")}
                     </button>
                   )}
-                </div>
+                  {isOwner && ended && (
+                    <button
+                      onClick={handleRestartAuction}
+                      disabled={isPending}
+                      className="px-6 py-2 bg-secondary text-on-secondary text-[10px] font-bold uppercase tracking-[0.2em] hover:opacity-80 transition-all duration-300 rounded-sm disabled:opacity-30"
+                    >
+                      {t("auction.dev.restartAuction")}
+                    </button>
+                  )}
+              </div>
               </div>
             </motion.div>
           )}
