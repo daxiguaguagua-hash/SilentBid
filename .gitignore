@@ -7,3 +7,5 @@ fhevmTemp/
 dist/
 frontend/dist/
 frontend/node_modules/
+frontend/e2e-report/
+frontend/test-results/

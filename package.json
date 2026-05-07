@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@fhevm/host-contracts": "^0.10.0",
-    "@zama-fhe/relayer-sdk": "^0.4.1",
+    "@zama-fhe/relayer-sdk": "0.4.1",
     "fhevmjs": "^0.6.2"
   }
 }

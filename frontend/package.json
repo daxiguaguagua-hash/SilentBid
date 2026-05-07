@@ -7,7 +7,9 @@
     "dev": "vite --host",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "test": "npm run typecheck && npm run build && vitest run"
+    "test": "npm run typecheck && npm run build && vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report e2e-report"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +24,7 @@
     "wagmi": "^3.6.9"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
