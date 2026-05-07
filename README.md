@@ -210,6 +210,7 @@ Public blockchains face a tension: transparency enables auditability, but public
 | [ROADMAP.md](ROADMAP.md) | Submission roadmap and next priorities |
 | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | 2-minute video narration and recording checklist |
 | [SUBMISSION.md](SUBMISSION.md) | Copy-ready submission facts and final checklist |
+| [CONTRIBUTORS.md](CONTRIBUTORS.md) | Human and AI contributors who built SilentBid |
 | [STATUS.md](STATUS.md) | Chronological progress log |
 | [TODO.md](TODO.md) | Remaining tasks |
 
