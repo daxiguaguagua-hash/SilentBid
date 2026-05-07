@@ -49,9 +49,9 @@ flowchart LR
 
 | Network | Address |
 |---|---|
-| Sepolia | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
+| Sepolia | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
 
-[View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xAB06CB9cddC96B4c8725F3298548e56CbC10994d)
+[View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47)
 
 Verified browser transactions:
 
@@ -96,7 +96,7 @@ cd frontend && npm install
 Create `frontend/.env`:
 
 ```bash
-VITE_CONTRACT_ADDRESS=0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
+VITE_CONTRACT_ADDRESS=0x616239Fd271BD7A4FAc343ABDD90e51244077b47
 ```
 
 Run the frontend:

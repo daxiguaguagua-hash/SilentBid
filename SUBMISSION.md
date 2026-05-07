@@ -9,8 +9,8 @@
 | Official bounty | https://openbuild.xyz/learn/challenges/2095330503 |
 | Submission deadline | May 10, 2026 23:59 AOE |
 | Submission form | https://forms.gle/h2vdBaZ9zwmLVzeu5 |
-| Sepolia contract | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
-| Explorer | https://sepolia.etherscan.io/address/0xAB06CB9cddC96B4c8725F3298548e56CbC10994d |
+| Sepolia contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| Explorer | https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47 |
 | Verified encrypted bid tx | `0xfc54da826c251e17fc6ac6...` |
 | Verified trivial bid tx | `0x6ebbe500dac2e408da2d0c...` |
 | Local demo URL | `http://localhost:5173/` |
@@ -131,7 +131,7 @@ npm run dev
 Create `frontend/.env`:
 
 ```bash
-VITE_CONTRACT_ADDRESS=0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
+VITE_CONTRACT_ADDRESS=0x616239Fd271BD7A4FAc343ABDD90e51244077b47
 ```
 
 ## Final Submission Checklist
