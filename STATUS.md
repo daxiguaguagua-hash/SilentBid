@@ -1,5 +1,31 @@
 # STATUS
 
+## 2026-05-07 Official OpenBuild bounty alignment
+- Reviewed official challenge page: `https://openbuild.xyz/learn/challenges/2095330503`.
+- Confirmed submission requirements: working Zama Protocol dApp demo, smart contract + frontend, clear docs, 2-minute real-person video, deadline May 10, 2026 23:59 AOE.
+- Added README bounty context and judging-fit table.
+- Expanded SUBMISSION.md with official requirement mapping, judging criteria positioning, manual Chrome/MetaMask test boundary, and closed-auction follow-up checklist.
+- Updated DEMO_SCRIPT.md with real-person video constraint, closed-auction narration, and judging-point talking lines.
+- Testing rule captured: wallet-dependent flows must be tested in local desktop Chrome with MetaMask; in-app browser is limited to disconnected UI, routes, layout, and console checks.
+
+## 2026-05-07 12:45 Design audit + improvements (frontend-design skill)
+- Replaced Inter with DM Sans (more distinctive, geometric, less AI-generic)
+- Activated secondary green (#3A4A3F) across all pages for security/crypto cues
+- Added whileInView staggered reveals on Home metrics, Lobby card, AuctionDetail sidebar
+- Added AnimatePresence page transitions between routes
+- Enhanced bid input: focus glow ring, submit button hover transitions to green
+- Green now used for: eyebrow text, security labels, activity dots, status badges, links
+- All 25 tests pass (10 contract + 10 unit + 12 E2E)
+
+## 2026-05-07 11:42 i18n — zh-CN Simplified Chinese
+- Codex reviewed approach: lightweight self-built t() + React Context (no i18next/react-intl).
+- Added `src/i18n/`: en.ts (reference), zh-CN.ts (full translation), I18nProvider + useI18n hook.
+- All static UI text migrated to t() across Navbar, Footer, Home, Lobby, AuctionDetail, Dashboard.
+- Runtime status messages (FHEVM init, bid submission, errors) also translated.
+- Switch via `VITE_LOCALE=zh-CN` env var. Default en keeps all existing tests stable.
+- New tests: key parity (en ↔ zh-CN), Chinese rendering verification.
+- All 25 tests pass (10 contract + 10 unit + 12 E2E).
+
 ## 2026-05-07 10:58 UI integration with Codex-approved plan
 - Codex reviewed both repos and approved: extract hook → layer new UI on top.
 - Extracted `useSilentBid` hook (all wagmi/FHEVM/contract/events logic) + `lib/bids.ts` (parseBidAmount).

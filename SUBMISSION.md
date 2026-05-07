@@ -6,6 +6,9 @@
 |---|---|
 | Project name | SilentBid |
 | One-liner | Privacy-preserving sealed-bid auction on Zama FHEVM |
+| Official bounty | https://openbuild.xyz/learn/challenges/2095330503 |
+| Submission deadline | May 10, 2026 23:59 AOE |
+| Submission form | https://forms.gle/h2vdBaZ9zwmLVzeu5 |
 | Sepolia contract | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
 | Explorer | https://sepolia.etherscan.io/address/0xAB06CB9cddC96B4c8725F3298548e56CbC10994d |
 | Verified encrypted bid tx | `0xfc54da826c251e17fc6ac6...` |
@@ -43,7 +46,43 @@ The working demo proves the full path: Zama SDK initialization, encrypted input 
 | Wallet | MetaMask on Sepolia |
 | Contract framework | Hardhat |
 | Frontend stack | React, wagmi, viem, Vite |
-| Test coverage | 10 contract tests, 7 frontend checks/tests |
+| Test coverage | 10 contract tests, 10 frontend tests |
+
+## Official Requirement Mapping
+
+| OpenBuild requirement | Status | Evidence |
+|---|---|---|
+| Functioning dApp demo using Zama Protocol | Ready | Local frontend + Sepolia contract |
+| Real-world FHE use case | Ready | Confidential sealed-bid auction |
+| Smart contract implementation | Ready | `contracts/SilentBid.sol` |
+| Frontend implementation | Ready | `frontend/` React app |
+| Clear project documentation | Ready | README, TESTING, WORKFLOW, ROADMAP, SUBMISSION |
+| 2-minute human-presented demo video | Pending | Must record with real person on camera |
+
+
+## Compliance-Aware Privacy Model
+
+SilentBid demonstrates a compliance-friendly privacy architecture: the auction lifecycle is publicly auditable (when bids were submitted, how many, by whom), while the bid amounts remain encrypted throughout competition. This is selective privacy, not opacity — regulators and auditors can verify that the auction was fair, but competitors cannot see each other's bids.
+
+| Layer | Public | Encrypted |
+|---|---|---|
+| Bid submission event | bidder address, timestamp, tx hash | bid amount |
+| Auction status | active/ended, bid count, owner address | current highest bid |
+| Winner identity | encrypted during auction | revealed only after end via ACL |
+| Highest bid | encrypted during auction | revealed only after end via ACL |
+
+This pattern directly addresses the tension between blockchain transparency and financial privacy — a key concern for institutional adoption of on-chain finance.
+
+## Judging Criteria Positioning
+
+| Criterion | Talking point |
+|---|---|
+| Innovation | SilentBid turns sealed bidding into a programmable on-chain workflow without public bid leakage. |
+| Compliance awareness | The design separates public audit data from confidential bid values, enabling selective privacy rather than opacity. |
+| Real-world potential | Applicable to RWA auctions, DAO procurement, grant allocation, private tenders, and confidential trading. |
+| Technical implementation | Uses FHE.select (encrypted conditional) for branchless highest-bid tracking, euint32 for bid amounts, and ACL-based selective decryption. The contract never branches on plaintext bid values. |
+| Production readiness | Contract, frontend, and E2E smoke tests are documented and passing. |
+| Usability | The demo has a concise reviewer flow and a 2-minute script. |
 
 ## Evidence
 
@@ -54,6 +93,28 @@ The working demo proves the full path: Zama SDK initialization, encrypted input 
 | Sepolia browser smoke | Passing |
 | Encrypted bid tx | Confirmed through MetaMask |
 | Bid count refresh | Verified from `1` to `2` |
+
+## Manual Chrome / MetaMask Boundary
+
+Wallet-dependent flows cannot be validated in the in-app browser because it cannot install MetaMask.
+
+| Flow | Test location |
+|---|---|
+| Page load, disconnected state, routing, console errors | In-app browser |
+| MetaMask connect, chain switch, signatures, bid transactions, end auction | Local desktop Chrome with MetaMask |
+| Final submission smoke | Local desktop Chrome with MetaMask |
+
+## Closed Auction Follow-Up
+
+After the owner closes the auction, the demo should show or explain:
+
+| Step | Expected proof |
+|---|---|
+| Confirm closed state | UI shows Closed/Ended or contract `ended == true` |
+| Confirm bid count | `bidCount` remains public and auditable |
+| Explain privacy boundary | Losing bid values remain private |
+| Explain result model | Winner/highest bid handles are only decryptable after auction end via contract ACL |
+| Record final clip | Show closed state and explain selective reveal |
 
 ## Commands For Reviewers
 
@@ -81,7 +142,9 @@ VITE_CONTRACT_ADDRESS=0xAB06CB9cddC96B4c8725F3298548e56CbC10994d
 | Contract explorer link | Ready |
 | 2-minute video link | Pending recording |
 | README updated | Ready |
-| Tests passing | Verified 2026-05-07 (10 contract + 7 frontend) |
+| Tests passing | Verified 2026-05-07 (10 contract + 10 frontend + 12 E2E) |
 | Decryption gate fix | Done (require ended) |
+| Official bounty mapping | Ready |
+| Chrome + MetaMask wallet smoke | Pending final manual pass |
 | Final Chrome smoke before submit | Pending |
 | Google Form submitted | Pending |

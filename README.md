@@ -4,6 +4,19 @@ Privacy-preserving sealed-bid auction on Zama FHEVM.
 
 SilentBid is a working dApp demo where users submit encrypted bids from the browser. The contract accepts encrypted inputs and updates auction state without exposing plaintext bid amounts on-chain.
 
+## Bounty Context
+
+SilentBid is built for the OpenBuild Zama bounty: [5000U Zama Bounty: Confidential Onchain Finance](https://openbuild.xyz/learn/challenges/2095330503).
+
+| Official requirement | SilentBid response |
+|---|---|
+| Functioning dApp demo using Zama Protocol | React + Sepolia contract demo |
+| Smart contract + frontend implementation | `contracts/SilentBid.sol` + `frontend/` |
+| Real-world FHE use case | Confidential sealed-bid auction |
+| Clear project documentation | README, submission pack, testing notes, demo script |
+| 2-minute human-presented video | Pending final recording |
+| Deadline | May 10, 2026 23:59 AOE |
+
 ## Why
 
 In a normal blockchain auction, every bid is public. Later bidders can inspect the chain and outbid previous participants by a tiny amount.
@@ -30,7 +43,7 @@ flowchart LR
 | FHEVM SDK initialization | Done |
 | Bid count refresh after tx | Done |
 | Contract tests | 10 passing |
-| Frontend checks/tests | 7 passing |
+| Frontend checks/tests | 10 passing |
 
 ## Contract
 
@@ -121,7 +134,7 @@ Expected results:
 | Check | Expected |
 |---|---|
 | Hardhat | 10 passing |
-| Frontend | typecheck + build + 7 tests passing |
+| Frontend | typecheck + build + 10 tests passing |
 
 Note: the encrypted browser demo is verified on Sepolia with Zama's hosted relayer. A local Hardhat JSON-RPC endpoint is not a Zama relayer.
 
@@ -134,6 +147,24 @@ Note: the encrypted browser demo is verified on Sepolia with Zama's hosted relay
 5. Click `Place Private Bid`.
 6. Confirm in MetaMask.
 7. Verify that `Bids` increments after confirmation.
+
+Wallet-dependent flows must be tested in the local desktop Chrome browser with MetaMask installed. The in-app browser is only used for disconnected UI, route, layout, and console-error checks.
+
+
+## Compliance-Aware Privacy
+
+Public blockchains face a tension: transparency enables auditability, but public bids create unfair markets. SilentBid resolves this with selective privacy — the auction lifecycle and bid events remain public and auditable, while bid amounts stay encrypted during competition. After the auction ends, only the winner and highest bid are decryptable through contract ACL. This pattern is relevant for regulated financial applications where full opacity is unacceptable but bid confidentiality is essential.
+
+## Judging Fit
+
+| Judging criterion | Narrative |
+|---|---|
+| Innovation | Sealed-bid auction where bid values stay encrypted during competition |
+| Compliance awareness | Public audit trail remains visible while sensitive bid values are protected |
+| Real-world potential | Useful for RWA auctions, DAO procurement, private tenders, and confidential trading |
+| Technical implementation | Uses Zama encrypted integer types and browser-side encrypted input generation |
+| Production readiness | Contract tests, frontend tests, E2E smoke tests, and deployed Sepolia demo |
+| Usability | Reviewer commands, demo script, and submission checklist are included |
 
 ## Project Documents
 

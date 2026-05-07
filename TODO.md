@@ -5,7 +5,7 @@
 [*] 前端 — React + FHEVM SDK
 [*] Sepolia 部署
 [*] aipm AI 环境初始化
-[*] 前端单元测试 — 7 tests (vitest + RTL, 7/7)
+[*] 前端单元测试 — 10 tests (vitest + RTL, 10/10)
 [ ] E2E 测试 — localhost + MetaMask/或 mock wallet 出价流程
 [*] 修复 Bid 成功后 Bids 未自动刷新
 [*] 修复 encrypted bid 的 SDK 初始化顺序（initSDK -> createInstance）
