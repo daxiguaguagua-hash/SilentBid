@@ -153,6 +153,29 @@ flowchart LR
 
 The current version does not store each bidder's encrypted bid handle, so it cannot yet generate a public zero-leakage proof such as "my encrypted bid < encrypted highest bid." A future extension would store `encryptedBids[bidder]` and produce a bidder-authorized encrypted boolean result, such as `myBid < highestBid`, after the auction ends.
 
+## Current Limitation: Upgradeability
+
+The current SilentBid demo contract is a direct deployment, not a Proxy / UUPS upgradeable contract. This was intentional for the hackathon submission window: the priority was to keep sealed bidding, the FHEVM flow, wallet interaction, and on-chain evidence stable, without adding last-minute proxy risks around storage layout, initializers, and upgrade permissions.
+
+As a result, the current contract address cannot be upgraded in place to add `encryptedBids[bidder]`, per-bidder losing verification, or a more complete settlement proof. Adding those capabilities requires deploying a new contract version.
+
+Post-hackathon engineering direction:
+
+```mermaid
+flowchart LR
+  A["Current direct deployment"] --> B["V2: store encryptedBids[bidder]"]
+  B --> C["Private losing-bidder proof"]
+  C --> D["UUPS / Transparent Proxy"]
+  D --> E["Keep entry address while upgrading logic"]
+```
+
+| Direction | Purpose |
+|---|---|
+| `encryptedBids[bidder]` | Support per-bidder result verification |
+| `myBid < highestBid` encrypted boolean | Let a loser decrypt only whether they lost, without learning the highest price |
+| UUPS / Transparent Proxy | Allow future feature expansion without repeatedly changing the entry address |
+| Stricter permission model | Separate owner, admin, and bidder boundaries for decryption and upgrades |
+
 ## Quick Start
 
 Install dependencies:

@@ -155,6 +155,29 @@ flowchart LR
 
 当前版本没有保存每个 bidder 的加密出价 handle，因此还不能生成“我的加密出价 < 最高加密出价”的公开零泄露证明。赛后增强方向是保存 `encryptedBids[bidder]`，并在结束后生成只授权给该 bidder 解密的比较结果，例如 `myBid < highestBid` 的加密布尔值。
 
+## 当前限制：合约可升级性
+
+当前 SilentBid demo 合约是直接部署版本，不是 Proxy / UUPS 可升级合约。这样做的原因是黑客松提交阶段优先保证密封出价、FHEVM 流程、钱包交互和链上证据稳定可运行，避免在最后阶段引入代理合约的 storage layout、initializer 和权限控制风险。
+
+这也意味着当前合约地址本身不能通过升级逻辑补上 `encryptedBids[bidder]`、逐笔输家验证或更完整的结算证明。如果要增加这些能力，需要部署新的合约版本。
+
+赛后工程化方向：
+
+```mermaid
+flowchart LR
+  A["当前直接部署合约"] --> B["V2: 保存 encryptedBids[bidder]"]
+  B --> C["输家私下比较证明"]
+  C --> D["UUPS / Transparent Proxy"]
+  D --> E["保留入口地址并升级逻辑"]
+```
+
+| 方向 | 目的 |
+|---|---|
+| `encryptedBids[bidder]` | 支持逐个 bidder 的结果验证 |
+| `myBid < highestBid` 加密布尔值 | 让输家只解密“是否输了”，不必知道最高价 |
+| UUPS / Transparent Proxy | 让后续功能扩展不必频繁更换入口地址 |
+| 更严格权限控制 | 明确 owner、admin、bidder 的解密和升级边界 |
+
 ## 快速开始
 
 安装依赖：
