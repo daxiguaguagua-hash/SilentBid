@@ -44,7 +44,7 @@ In the demo, I connect MetaMask on Sepolia, enter 100 BID Credits, and click Pla
 
 After the transaction is confirmed, the app refreshes the contract state and the bid count increases. The important point is that the bid was accepted and processed without exposing the plaintext bid value.
 
-To prove that, I query the Sepolia transaction `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` with `eth_getTransactionByHash`. The transaction calls the SilentBid contract, but the input is a long encrypted calldata payload beginning with `0x38263e82...`, not the plaintext bid amount. Then I query the receipt and show `status: 0x1`, proving the transaction succeeded.
+To prove that, I copy the latest wallet transaction ID from the on-chain evidence panel and query it in Alchemy Sandbox with `eth_getTransactionByHash`. The transaction calls the SilentBid contract, but the input is a long calldata payload, not the plaintext bid amount. Then I query the receipt and show `status: 0x1`, proving the transaction succeeded.
 
 SilentBid shows how FHE can bring real privacy to blockchain applications while keeping the logic programmable, verifiable, and on-chain. Thank you for watching.
 

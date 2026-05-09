@@ -6,20 +6,24 @@ SilentBid 是一个可运行的 dApp 演示：用户从浏览器提交加密出�
 
 > 📖 [English version](README.en.md)
 
+| 入口 | 链接 |
+|---|---|
+| 公网 Demo | http://3.21.154.136/ |
+| 本地开发 | `http://localhost:5173/` |
+| Sepolia 合约 | https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85 |
+
 ## Sepolia 上的隐私证明
 
-核心证据可在 Sepolia 网络上通过 Alchemy Sandbox 或 Etherscan 查看。加密出价交易调用 SilentBid 合约，但交易 input 是加密 calldata，而非明文出价金额。
+核心证据可在 Sepolia 网络上通过 Alchemy Sandbox 或 Etherscan 查看。加密出价交易调用 SilentBid 合约，但交易 input 是加密 calldata，而非明文出价金额。当前前端还会在“链上证据”区域展示当前钱包最近一次由 SilentBid 页面发起的 transaction ID，评审者可以一键复制并放到 Alchemy Sandbox 中验证。
 
 | 证明项 | 值 |
 |---|---|
 | 网络 | Sepolia 测试网 |
-| SilentBid 合约 | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
-| 用于证明的加密出价交易 | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| 当前演示合约 | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
+| 页面证据 | 当前钱包最新 transaction ID，支持复制 |
 | RPC 方法 | `eth_getTransactionByHash` |
-| `from` | `0x68269ebf49b17232a806e4caf126b340064d24ad` |
-| `to` | `0xab06cb9cddc96b4c8725f3298548e56cbc10994d` |
-| `value` | `0x0` |
-| `input` | 以 `0x38263e82...` 开头的长 calldata，非明文出价 |
+| 验证工具 | [Alchemy Sandbox](https://sandbox.alchemy.com/) 或 Sepolia Etherscan |
+| 隐私判断 | `input` 为长 calldata，不包含可读明文出价金额 |
 
 ```mermaid
 flowchart LR
@@ -31,12 +35,14 @@ flowchart LR
 
 验证步骤：
 
-1. 打开 [Alchemy Sandbox](https://sandbox.alchemy.com/)
-2. 选择 `Ethereum Sepolia`
-3. 选择 `eth_getTransactionByHash`
-4. 输入交易哈希 `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1`
-5. 确认 `to` 为 SilentBid 合约地址，`input` 为长加密 calldata
-6. 切换到 `eth_getTransactionReceipt`，输入相同哈希，确认 `status: "0x1"`
+1. 打开 `http://localhost:5173/auction/live`
+2. 连接 Sepolia 上的 MetaMask
+3. 提交一次密封出价并在钱包中确认
+4. 在页面右侧“链上证据”复制“当前钱包最新 transaction ID”
+5. 打开 [Alchemy Sandbox](https://sandbox.alchemy.com/)
+6. 选择 `Ethereum Sepolia` 和 `eth_getTransactionByHash`
+7. 粘贴 transaction ID，确认 `to` 为 SilentBid 合约地址，`input` 为长 calldata
+8. 切换到 `eth_getTransactionReceipt`，输入相同 transaction ID，确认 `status: "0x1"`
 
 这证明了出价交易在 Sepolia 上提交并确认，同时明文出价金额未在交易 input 中暴露。
 
@@ -78,6 +84,7 @@ flowchart LR
 | 加密出价交易 | 完成 |
 | FHEVM SDK 初始化 | 完成 |
 | 交易后出价计数刷新 | 完成 |
+| 链上证据：合约地址 + 当前钱包 transaction ID | 完成 |
 | 合约测试 | 10 通过 |
 | 前端检查/测试 | 10 通过 |
 
@@ -89,13 +96,13 @@ flowchart LR
 
 [在 Sepolia Etherscan 上查看合约](https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85)
 
-已验证的浏览器交易：
+链上证据区域会展示：
 
-| 流程 | 交易哈希 |
+| 字段 | 用途 |
 |---|---|
-| 普通出价 | `0x6ebbe500dac2e408da2d0c...` |
-| 加密出价证明 | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
-| 所有者结束拍卖 | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
+| 合约地址 | 确认当前前端连接的 SilentBid 合约 |
+| 当前钱包最新 transaction ID | 复制当前钱包在 SilentBid 页面产生的最近一笔交易 |
+| Alchemy Sandbox 链接 | 用 `eth_getTransactionByHash` 验证交易详情 |
 
 ## 技术栈
 
@@ -120,6 +127,8 @@ flowchart LR
 6. MetaMask 提交交易到 Sepolia
 7. 合约接收加密出价并发出 `BidSubmitted` 事件
 8. 前端重新获取合约状态并更新 `Bids` 计数
+
+拍卖结束时，合约会停止接收新出价，并给结果解密授予权限。当前合约保存的是最高价和赢家的加密 handle；它不是把最终价格作为明文变量直接写到链上。
 
 ## 快速开始
 
@@ -150,6 +159,8 @@ http://localhost:5173/
 ```
 
 使用 Sepolia 上的 MetaMask。
+
+公网演示入口为 `http://3.21.154.136/`。若要完整测试钱包签名和交易，请优先使用本地桌面 Chrome + MetaMask。
 
 ## 测试
 
@@ -184,12 +195,13 @@ npm run test
 5. 点击 `Place Private Bid`（提交私密出价）
 6. 在 MetaMask 中确认
 7. 确认 `Bids` 计数在确认后增加
+8. 在“链上证据”中复制当前钱包最新 transaction ID，并用 Alchemy Sandbox 验证
 
 依赖钱包的流程必须在安装了 MetaMask 的本地桌面 Chrome 浏览器中测试。应用内浏览器仅用于断开连接的 UI、路由、布局和控制台错误检查。
 
 ## 合规意识隐私
 
-公链面临一种张力：透明度使可审计性成为可能，但公开竞价制造了不公平市场。SilentBid 通过选择性隐私解决此问题——拍卖生命周期和出价事件保持公开可审计，而出价金额在竞价期间保持加密。拍卖结束后，仅获胜者和最高出价可通过合约 ACL 解密。此模式适用于受监管的金融应用场景：完全不可见不可接受，但出价保密必不可少。
+公链面临一种张力：透明度使可审计性成为可能，但公开竞价制造了不公平市场。SilentBid 通过选择性隐私解决此问题——拍卖生命周期和出价事件保持公开可审计，而出价金额在竞价期间保持加密。拍卖结束后，最高出价和赢家仍以加密 handle 形式保存在合约中，并通过合约 ACL 授权解密验证；它们不会作为明文公开变量直接暴露在链上。此模式适用于受监管的金融应用场景：完全不可见不可接受，但出价保密必不可少。
 
 ## 评审适配
 

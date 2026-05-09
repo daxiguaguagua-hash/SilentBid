@@ -175,8 +175,7 @@ const en = {
     evidence: {
       title: 'On-chain evidence',
       contract: 'Contract',
-      latestTx: 'Latest tx',
-      latestWalletTx: 'Latest wallet tx',
+      latestWalletTx: 'Latest wallet transaction ID',
       noWalletTx: 'No record yet',
       viewOnAlchemy: 'Verify on Alchemy Sandbox',
     },

@@ -173,8 +173,7 @@ const zhCN: Locale = {
     evidence: {
       title: '链上证据',
       contract: '合约',
-      latestTx: '最近交易',
-      latestWalletTx: '当前钱包最新交易',
+      latestWalletTx: '当前钱包最新 transaction ID',
       noWalletTx: '暂无记录',
       viewOnAlchemy: '在 Alchemy Sandbox 上验证',
     },

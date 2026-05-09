@@ -9,11 +9,10 @@
 | Official bounty | https://openbuild.xyz/learn/challenges/2095330503 |
 | Submission deadline | May 10, 2026 23:59 AOE |
 | Submission form | https://forms.gle/h2vdBaZ9zwmLVzeu5 |
-| Sepolia contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
-| Explorer | https://sepolia.etherscan.io/address/0x616239Fd271BD7A4FAc343ABDD90e51244077b47 |
-| Verified encrypted bid tx | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
-| Verified end auction tx | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
-| Verified trivial bid tx | `0x6ebbe500dac2e408da2d0c...` |
+| Sepolia contract | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
+| Explorer | https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85 |
+| Transaction evidence | Copy the latest wallet transaction ID from the on-chain evidence panel |
+| Verification tool | https://sandbox.alchemy.com/ |
 | Local demo URL | `http://localhost:5173/` |
 
 ## Most Important Proof: Bid Amount Is Not Public
@@ -23,18 +22,17 @@ Use this proof first in the README, demo, and judge walkthrough.
 | Step | Evidence |
 |---|---|
 | Query transaction | `eth_getTransactionByHash` on Ethereum Sepolia |
-| Transaction hash | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
-| Sender | `from: 0x68269ebf49b17232a806e4caf126b340064d24ad` |
-| Contract | `to: 0xab06cb9cddc96b4c8725f3298548e56cbc10994d` |
-| ETH value | `value: 0x0` |
-| Transaction input | Long calldata beginning with `0x38263e82...` |
+| Transaction hash | Copy from the SilentBid on-chain evidence panel after submitting a bid |
+| Contract | `to: 0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
+| ETH value | `value: 0x0` for bid calls |
+| Transaction input | Long calldata, not a readable plaintext bid |
 | Privacy conclusion | The chain sees encrypted calldata and proof data, not the plaintext bid amount |
-| Success proof | `eth_getTransactionReceipt` returns `status: 0x1` for the same tx |
+| Success proof | `eth_getTransactionReceipt` returns `status: 0x1` for the same transaction |
 
 ```mermaid
 flowchart TD
   A["Chrome + MetaMask submits bid"] --> B["Zama SDK encrypted input"]
-  B --> C["Sepolia tx 0x8c9f75..."]
+  B --> C["Sepolia transaction ID"]
   C --> D["input is encrypted calldata"]
   D --> E["No plaintext bid amount on-chain"]
   C --> F["receipt status 0x1"]
@@ -43,7 +41,7 @@ flowchart TD
 
 Copy-ready proof statement:
 
-> On Sepolia, the encrypted bid transaction `0x8c9f75df...65b1` calls the SilentBid contract with `value: 0x0` and a long encrypted calldata payload beginning with `0x38263e82...`. The plaintext bid amount is not visible in the transaction input or logs, while the receipt confirms success with `status: 0x1`.
+> On Sepolia, a SilentBid transaction calls the current demo contract with `value: 0x0` and a long calldata payload. The plaintext bid amount is not visible in the transaction input or logs, while the receipt confirms success with `status: 0x1`. Reviewers can copy the latest wallet transaction ID directly from the demo's on-chain evidence panel and verify it in Alchemy Sandbox.
 
 ## Short Description
 
@@ -98,8 +96,8 @@ SilentBid demonstrates a compliance-friendly privacy architecture: the auction l
 |---|---|---|
 | Bid submission event | bidder address, timestamp, tx hash | bid amount |
 | Auction status | active/ended, bid count, owner address | current highest bid |
-| Winner identity | encrypted during auction | revealed only after end via ACL |
-| Highest bid | encrypted during auction | revealed only after end via ACL |
+| Winner identity | encrypted during auction | decryptable only after end via ACL |
+| Highest bid | encrypted during auction | decryptable only after end via ACL |
 
 This pattern directly addresses the tension between blockchain transparency and financial privacy — a key concern for institutional adoption of on-chain finance.
 
@@ -121,9 +119,9 @@ This pattern directly addresses the tension between blockchain transparency and 
 | Contract tests | Passing |
 | Frontend typecheck/build/tests | Passing |
 | Sepolia browser smoke | Passing |
-| Encrypted bid tx | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` confirmed through MetaMask |
-| Encrypted bid calldata privacy | Verified via Alchemy Sandbox `eth_getTransactionByHash` |
-| Encrypted bid receipt | Verified via Alchemy Sandbox `eth_getTransactionReceipt`, `status: 0x1` |
+| Wallet transaction ID | Displayed in the demo's on-chain evidence panel after a SilentBid transaction |
+| Encrypted bid calldata privacy | Verifiable via Alchemy Sandbox `eth_getTransactionByHash` |
+| Encrypted bid receipt | Verifiable via Alchemy Sandbox `eth_getTransactionReceipt`, `status: 0x1` |
 | Bid count refresh | Verified from `1` to `2` |
 
 ## Manual Chrome / MetaMask Boundary
@@ -146,7 +144,7 @@ After the owner closes the auction, the demo should show or explain:
 | Confirm bid count | `bidCount` remains public and auditable |
 | Explain privacy boundary | Losing bid values remain private |
 | Explain result model | Winner/highest bid handles are only decryptable after auction end via contract ACL |
-| Record final clip | Show closed state and explain selective reveal |
+| Record final clip | Show closed state and explain ACL-based result decryption |
 
 ## Commands For Reviewers
 
@@ -163,7 +161,7 @@ npm run dev
 Create `frontend/.env`:
 
 ```bash
-VITE_CONTRACT_ADDRESS=0x616239Fd271BD7A4FAc343ABDD90e51244077b47
+VITE_CONTRACT_ADDRESS=0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85
 ```
 
 ## Final Submission Checklist

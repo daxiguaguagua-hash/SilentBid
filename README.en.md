@@ -4,20 +4,24 @@ Privacy-preserving sealed-bid auction on Zama FHEVM.
 
 SilentBid is a working dApp demo where users submit encrypted bids from the browser. The contract accepts encrypted inputs and updates auction state without exposing plaintext bid amounts on-chain.
 
+| Entry | Link |
+|---|---|
+| Public demo | http://3.21.154.136/ |
+| Local development | `http://localhost:5173/` |
+| Sepolia contract | https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85 |
+
 ## Privacy Proof On Sepolia
 
-The core evidence is visible on Sepolia through Alchemy Sandbox or Etherscan. The encrypted bid transaction calls the SilentBid contract, but the transaction input is encrypted calldata instead of a plaintext bid amount.
+The core evidence is visible on Sepolia through Alchemy Sandbox or Etherscan. The encrypted bid transaction calls the SilentBid contract, but the transaction input is encrypted calldata instead of a plaintext bid amount. The frontend also shows the latest transaction ID produced by the connected wallet inside the SilentBid page, so reviewers can copy it and verify it in Alchemy Sandbox.
 
 | Proof item | Value |
 |---|---|
 | Network | Sepolia testnet |
-| SilentBid contract | `0xAB06CB9cddC96B4c8725F3298548e56CbC10994d` |
-| Encrypted bid tx used for proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
+| Current demo contract | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
+| Page evidence | Latest wallet transaction ID, with copy button |
 | RPC method | `eth_getTransactionByHash` |
-| `from` | `0x68269ebf49b17232a806e4caf126b340064d24ad` |
-| `to` | `0xab06cb9cddc96b4c8725f3298548e56cbc10994d` |
-| `value` | `0x0` |
-| `input` | Long calldata beginning with `0x38263e82...`, not a plaintext bid |
+| Verification tool | [Alchemy Sandbox](https://sandbox.alchemy.com/) or Sepolia Etherscan |
+| Privacy check | `input` is long calldata, not a readable plaintext bid amount |
 
 ```mermaid
 flowchart LR
@@ -29,12 +33,14 @@ flowchart LR
 
 Verification steps:
 
-1. Open [Alchemy Sandbox](https://sandbox.alchemy.com/).
-2. Select `Ethereum Sepolia`.
-3. Select `eth_getTransactionByHash`.
-4. Enter tx hash `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1`.
-5. Confirm `to` is the SilentBid contract and `input` is a long encrypted calldata payload.
-6. Switch to `eth_getTransactionReceipt` with the same hash and confirm `status: "0x1"`.
+1. Open `http://localhost:5173/auction/live`.
+2. Connect MetaMask on Sepolia.
+3. Submit a sealed bid and confirm it in the wallet.
+4. Copy the latest wallet transaction ID from the page's on-chain evidence panel.
+5. Open [Alchemy Sandbox](https://sandbox.alchemy.com/).
+6. Select `Ethereum Sepolia` and `eth_getTransactionByHash`.
+7. Paste the transaction ID and confirm `to` is the SilentBid contract and `input` is long calldata.
+8. Switch to `eth_getTransactionReceipt` with the same transaction ID and confirm `status: "0x1"`.
 
 This proves the bid transaction was submitted and confirmed on Sepolia while the plaintext bid amount was not exposed in the transaction input.
 
@@ -76,6 +82,7 @@ flowchart LR
 | Encrypted bid transaction | Done |
 | FHEVM SDK initialization | Done |
 | Bid count refresh after tx | Done |
+| On-chain evidence: contract + wallet transaction ID | Done |
 | Contract tests | 10 passing |
 | Frontend checks/tests | 10 passing |
 
@@ -87,13 +94,13 @@ flowchart LR
 
 [View contract on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85)
 
-Verified browser transactions:
+The on-chain evidence panel shows:
 
-| Flow | Tx |
+| Field | Purpose |
 |---|---|
-| Trivial bid | `0x6ebbe500dac2e408da2d0c...` |
-| Encrypted bid proof | `0x8c9f75df6496aee9b4692329b318e4226374b380b537a76ace5d9f494adb65b1` |
-| Owner end auction | `0x31c716111c226f4801e96ba9caf4d2fee2b8bfff193f676cac4934bb2e48190a` |
+| Contract address | Confirms which SilentBid contract the frontend is connected to |
+| Latest wallet transaction ID | Copies the latest transaction produced by the connected wallet inside the SilentBid page |
+| Alchemy Sandbox link | Verifies the transaction via `eth_getTransactionByHash` |
 
 ## Tech Stack
 
@@ -118,6 +125,8 @@ The encrypted bid flow is:
 6. MetaMask submits the transaction to Sepolia.
 7. Contract accepts the encrypted bid and emits `BidSubmitted`.
 8. Frontend refetches contract state and updates `Bids`.
+
+When the auction ends, the contract stops accepting new bids and grants result decryption permissions. The current contract stores the highest bid and winner as encrypted handles; it does not write the final price as a plaintext public variable on-chain.
 
 ## Quick Start
 
@@ -148,6 +157,8 @@ http://localhost:5173/
 ```
 
 Use MetaMask on Sepolia.
+
+The public demo is available at `http://3.21.154.136/`. For full wallet signing and transaction testing, use local desktop Chrome with MetaMask.
 
 ## Testing
 
@@ -182,13 +193,14 @@ Note: the encrypted browser demo is verified on Sepolia with Zama's hosted relay
 5. Click `Place Private Bid`.
 6. Confirm in MetaMask.
 7. Verify that `Bids` increments after confirmation.
+8. Copy the latest wallet transaction ID from the on-chain evidence panel and verify it in Alchemy Sandbox.
 
 Wallet-dependent flows must be tested in the local desktop Chrome browser with MetaMask installed. The in-app browser is only used for disconnected UI, route, layout, and console-error checks.
 
 
 ## Compliance-Aware Privacy
 
-Public blockchains face a tension: transparency enables auditability, but public bids create unfair markets. SilentBid resolves this with selective privacy — the auction lifecycle and bid events remain public and auditable, while bid amounts stay encrypted during competition. After the auction ends, only the winner and highest bid are decryptable through contract ACL. This pattern is relevant for regulated financial applications where full opacity is unacceptable but bid confidentiality is essential.
+Public blockchains face a tension: transparency enables auditability, but public bids create unfair markets. SilentBid resolves this with selective privacy — the auction lifecycle and bid events remain public and auditable, while bid amounts stay encrypted during competition. After the auction ends, the highest bid and winner remain encrypted handles in the contract and can be authorized for decryption through contract ACL; they are not written as plaintext public variables on-chain. This pattern is relevant for regulated financial applications where full opacity is unacceptable but bid confidentiality is essential.
 
 ## Judging Fit
 
