@@ -9,7 +9,7 @@
 | Audience | Zama bounty judges, Web3 developers, privacy-auction evaluators |
 | Current stage | Working hackathon demo |
 | Network | Sepolia |
-| Contract | `0x616239Fd271BD7A4FAc343ABDD90e51244077b47` |
+| Contract | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
 
 SilentBid is a sealed-bid auction dApp where users submit encrypted bids from the browser. The smart contract accepts encrypted bid inputs and updates auction state with Zama FHEVM primitives, so bid amounts do not appear as plaintext on-chain.
 
@@ -190,4 +190,3 @@ flowchart TD
 | Does the final Google Form require a video link? | Treat video as lowest priority unless the form enforces it |
 | Should E2E use real MetaMask or mocked wallet provider? | Prefer mocked EIP-1193 for deterministic tests |
 | Should the UI expose winner reveal in this demo? | Keep out of core demo unless time remains after submission readiness |
-
