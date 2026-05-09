@@ -18,6 +18,8 @@ The core evidence is visible on Sepolia through Alchemy Sandbox or Etherscan. Th
 |---|---|
 | Network | Sepolia testnet |
 | Current demo contract | `0xCE06943bF0A1a5bfb409e50b00466abb6fc24F85` |
+| Current auction expiry | `2026-05-14 22:17:00` China time / `2026-05-14 14:17:00 UTC` |
+| Current state | `isActive = true`, `ended = false`, `bidCount = 3` |
 | Page evidence | Latest wallet transaction ID, with copy button |
 | RPC method | `eth_getTransactionByHash` |
 | Verification tool | [Alchemy Sandbox](https://sandbox.alchemy.com/) or Sepolia Etherscan |
@@ -127,6 +129,52 @@ The encrypted bid flow is:
 8. Frontend refetches contract state and updates `Bids`.
 
 When the auction ends, the contract stops accepting new bids and grants result decryption permissions. The current contract stores the highest bid and winner as encrypted handles; it does not write the final price as a plaintext public variable on-chain.
+
+## Current Limitation: Losing-Bidder Verification
+
+The current demo auction expires at `2026-05-14 22:17:00` China time (`2026-05-14 14:17:00 UTC`). Until the auction expires and `endAuction()` is executed, this simulated auction cannot finalize the winner/loser relationship or demonstrate the final price comparison between a losing bidder and the winner.
+
+After expiry, a losing bidder can privately verify the result without revealing their own bid:
+
+```mermaid
+flowchart LR
+  A["Auction expires"] --> B["Call endAuction()"]
+  B --> C["Call allowBidDecryption(loser)"]
+  C --> D["Loser reads encrypted getHighestBid() handle"]
+  D --> E["FHEVM relayer decrypts highest bid for that user"]
+  E --> F["Loser compares locally: my bid < highest bid"]
+```
+
+| Verification goal | Current version |
+|---|---|
+| Losing bidder confirms their bid is below the highest bid | Yes, after expiry, by authorizing highest-bid decryption to that bidder |
+| Losing bidder keeps their own bid private | Yes, the comparison is local to the bidder |
+| Publicly prove a specific loser lost without revealing prices | Not implemented in this version |
+
+The current version does not store each bidder's encrypted bid handle, so it cannot yet generate a public zero-leakage proof such as "my encrypted bid < encrypted highest bid." A future extension would store `encryptedBids[bidder]` and produce a bidder-authorized encrypted boolean result, such as `myBid < highestBid`, after the auction ends.
+
+## Current Limitation: Upgradeability
+
+The current SilentBid demo contract is a direct deployment, not a Proxy / UUPS upgradeable contract. This was intentional for the hackathon submission window: the priority was to keep sealed bidding, the FHEVM flow, wallet interaction, and on-chain evidence stable, without adding last-minute proxy risks around storage layout, initializers, and upgrade permissions.
+
+As a result, the current contract address cannot be upgraded in place to add `encryptedBids[bidder]`, per-bidder losing verification, or a more complete settlement proof. Adding those capabilities requires deploying a new contract version.
+
+Post-hackathon engineering direction:
+
+```mermaid
+flowchart LR
+  A["Current direct deployment"] --> B["V2: store encryptedBids[bidder]"]
+  B --> C["Private losing-bidder proof"]
+  C --> D["UUPS / Transparent Proxy"]
+  D --> E["Keep entry address while upgrading logic"]
+```
+
+| Direction | Purpose |
+|---|---|
+| `encryptedBids[bidder]` | Support per-bidder result verification |
+| `myBid < highestBid` encrypted boolean | Let a loser decrypt only whether they lost, without learning the highest price |
+| UUPS / Transparent Proxy | Allow future feature expansion without repeatedly changing the entry address |
+| Stricter permission model | Separate owner, admin, and bidder boundaries for decryption and upgrades |
 
 ## Quick Start
 
