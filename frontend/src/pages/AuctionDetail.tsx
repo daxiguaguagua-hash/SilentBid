@@ -76,6 +76,7 @@ export default function AuctionDetail() {
     handleBidTrivial,
     handleEndAuction,
     handleRestartAuction,
+    txHash,
     isPending,
     ENABLE_TEST,
   } = useSilentBid();
@@ -88,6 +89,7 @@ export default function AuctionDetail() {
   const UINT32_MAX = 2 ** 32 - 1;
   const canBid =
     isConnected && instance && isBidAmountValid && !ended && isActive;
+  const walletEvidenceTxHash = latestWalletTxHash ?? txHash;
 
   // Reset focus state when bid panel changes
   useEffect(() => {
@@ -598,15 +600,15 @@ export default function AuctionDetail() {
                     <span className="opacity-50">
                       {t('auction.evidence.latestWalletTx')}
                     </span>
-                    {latestWalletTxHash ? (
+                    {walletEvidenceTxHash ? (
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold tabular-nums">
-                          {latestWalletTxHash.slice(0, 6)}...
-                          {latestWalletTxHash.slice(-4)}
+                          {walletEvidenceTxHash.slice(0, 6)}...
+                          {walletEvidenceTxHash.slice(-4)}
                         </span>
                         <button
                           onClick={() =>
-                            copyWithFeedback(latestWalletTxHash, 'walletTx')
+                            copyWithFeedback(walletEvidenceTxHash, 'walletTx')
                           }
                           className="text-[9px] font-bold uppercase tracking-[0.1em] text-secondary/60 hover:text-secondary transition-colors"
                         >
@@ -621,9 +623,9 @@ export default function AuctionDetail() {
                       </span>
                     )}
                   </div>
-                  {latestWalletTxHash && (
+                  {walletEvidenceTxHash && (
                     <a
-                      href={buildAlchemyTxLink(latestWalletTxHash)}
+                      href={buildAlchemyTxLink(walletEvidenceTxHash)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[9px] font-bold text-secondary/60 hover:text-secondary transition-colors uppercase tracking-[0.15em] hover:underline underline-offset-2"
