@@ -65,6 +65,15 @@ export function useSilentBid() {
     `0x${string}` | undefined
   >();
 
+  const rememberWalletTransaction = (hash: `0x${string}`) => {
+    setLatestWalletTxHash(hash);
+    if (!address || !CONTRACT_ADDRESS || typeof window === 'undefined') return;
+    window.localStorage.setItem(
+      getLatestTxStorageKey(CONTRACT_ADDRESS, address),
+      hash,
+    );
+  };
+
   const mergeEvents = (nextEvents: BidActivity[]) => {
     setEvents((prev) => {
       const merged = [...prev, ...nextEvents];
@@ -129,18 +138,18 @@ export function useSilentBid() {
     const savedTxHash = window.localStorage.getItem(
       getLatestTxStorageKey(CONTRACT_ADDRESS, address),
     );
-    setLatestWalletTxHash(savedTxHash as `0x${string}` | undefined);
+    setLatestWalletTxHash(
+      savedTxHash?.startsWith('0x')
+        ? (savedTxHash as `0x${string}`)
+        : undefined,
+    );
   }, [address]);
 
   useEffect(() => {
     if (!address || !CONTRACT_ADDRESS || !txHash || typeof window === 'undefined')
       return;
 
-    window.localStorage.setItem(
-      getLatestTxStorageKey(CONTRACT_ADDRESS, address),
-      txHash,
-    );
-    setLatestWalletTxHash(txHash);
+    rememberWalletTransaction(txHash);
   }, [address, txHash]);
 
   useEffect(() => {
@@ -287,6 +296,7 @@ export function useSilentBid() {
         functionName: 'bid',
         args: [encryptedBidHandle, inputProofHex],
       });
+      rememberWalletTransaction(hash);
       setStatus(`Encrypted bid submitted: ${hash.slice(0, 10)}...`);
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);
@@ -303,6 +313,7 @@ export function useSilentBid() {
         functionName: 'bidTrivial',
         args: [parsedBidAmount],
       });
+      rememberWalletTransaction(hash);
       setStatus(`Trivial bid submitted: ${hash.slice(0, 10)}...`);
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);
@@ -317,6 +328,7 @@ export function useSilentBid() {
         abi: ABI,
         functionName: 'endAuction',
       });
+      rememberWalletTransaction(hash);
       setStatus(`End auction submitted: ${hash.slice(0, 10)}...`);
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);
@@ -333,6 +345,7 @@ export function useSilentBid() {
         functionName: 'restartAuction',
         args: [ONE_HOUR],
       });
+      rememberWalletTransaction(hash);
       setStatus(`Auction restarted: ${hash.slice(0, 10)}...`);
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);

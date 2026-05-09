@@ -76,7 +76,6 @@ export default function AuctionDetail() {
     handleBidTrivial,
     handleEndAuction,
     handleRestartAuction,
-    txHash,
     isPending,
     ENABLE_TEST,
   } = useSilentBid();
@@ -633,36 +632,6 @@ export default function AuctionDetail() {
                     </a>
                   )}
                 </div>
-                {txHash && txHash !== latestWalletTxHash && (
-                  <div>
-                    <div className="flex justify-between text-xs items-center">
-                      <span className="opacity-50">
-                        {t('auction.evidence.latestTx')}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold tabular-nums">
-                          {txHash.slice(0, 6)}...{txHash.slice(-4)}
-                        </span>
-                        <button
-                          onClick={() => copyWithFeedback(txHash, 'walletTx')}
-                          className="text-[9px] font-bold uppercase tracking-[0.1em] text-secondary/60 hover:text-secondary transition-colors"
-                        >
-                          {copiedField === 'walletTx'
-                            ? t('auction.contract.copied')
-                            : t('auction.contract.copy')}
-                        </button>
-                      </div>
-                    </div>
-                    <a
-                      href={buildAlchemyTxLink(txHash)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[9px] font-bold text-secondary/60 hover:text-secondary transition-colors uppercase tracking-[0.15em] hover:underline underline-offset-2"
-                    >
-                      {t('auction.evidence.viewOnAlchemy')} &rarr;
-                    </a>
-                  </div>
-                )}
               </div>
             </motion.div>
 
