@@ -26,7 +26,26 @@ INBOX 为空时看 TODO.md 自行推进。
 
 60% 时保存到 ~/.claude/sessions/，/resume 继续。
 
+# 模型路由
+
+使用 Agent 工具派发子任务时：
+- 简单/机械任务（读文件、grep、find、查文档）→ `model: "haiku"` (DeepSeek V4 Flash)
+- 复杂任务（写代码、架构设计、review、调试）→ `model: "sonnet"` (DeepSeek V4 Pro)
+- 主对话不动
+
 # 项目
 
 SilentBid — Zama FHEVM 密封竞价拍卖。Deadline: 5月10日 23:59 AOE。
 Agent 配置见 .claude/agents.json（由 aipm 从 stack.yaml 生成）。
+
+## 代码探索路由
+
+**按问题类型选工具，全部零 API 费用。**
+
+| 问题类型 | 工具 | 说明 |
+|---------|------|------|
+| 找引用/定义/符号 | LSP | 最精准，findReferences/goToDefinition |
+| 探索结构/模块关系 | graphify | query/path/explain |
+| 冷启动了解全局 | GRAPH_REPORT.md | 首次进入读一次即可 |
+| 模式搜索 + 改写 | ast-grep | `sg run -p 'pattern' -r 'fix'` |
+| 兜底 | grep | 以上都查不到时 |

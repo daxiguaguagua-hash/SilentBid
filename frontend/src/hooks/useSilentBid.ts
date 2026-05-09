@@ -1,37 +1,52 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   useConnection,
   useConnect,
   useDisconnect,
+  usePublicClient,
   useWriteContract,
   useReadContract,
   useWatchContractEvent,
   useWaitForTransactionReceipt,
-} from "wagmi";
-import { injected } from "wagmi/connectors";
-import { toHex } from "viem";
+} from 'wagmi';
+import { injected } from 'wagmi/connectors';
+import { toHex } from 'viem';
 import {
   createInstance,
   initSDK,
   SepoliaConfigV2,
   type FhevmInstance,
-} from "@zama-fhe/relayer-sdk/web";
-import ABI from "../SilentBid.abi.json";
-import { parseBidAmount } from "../lib/bids";
+} from '@zama-fhe/relayer-sdk/web';
+import ABI from '../SilentBid.abi.json';
+import { parseBidAmount } from '../lib/bids';
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS ||
-  "") as `0x${string}`;
+  '') as `0x${string}`;
 
-const ENABLE_TEST = import.meta.env.VITE_ENABLE_TEST_CONTROLS === "true";
+const ENABLE_TEST = import.meta.env.VITE_ENABLE_TEST_CONTROLS === 'true';
 
 const FHEVM_CONFIG = {
   11155111: SepoliaConfigV2,
+};
+
+function getLatestTxStorageKey(
+  contractAddress: string,
+  walletAddress: string,
+): string {
+  return `silentbid:last-tx:${contractAddress.toLowerCase()}:${walletAddress.toLowerCase()}`;
+}
+
+export type BidActivity = {
+  id: string;
+  bidder: string;
+  txHash?: string;
 };
 
 export function useSilentBid() {
   const { address, isConnected } = useConnection();
   const { mutate: connect } = useConnect();
   const { mutate: disconnect } = useDisconnect();
+  const publicClient = usePublicClient();
   const {
     mutateAsync: writeContractAsync,
     data: txHash,
@@ -42,36 +57,48 @@ export function useSilentBid() {
     hash: txHash,
   });
 
-  const [bidAmount, setBidAmount] = useState("100");
+  const [bidAmount, setBidAmount] = useState('100');
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
-  const [status, setStatus] = useState("");
-  const [events, setEvents] = useState<string[]>([]);
+  const [status, setStatus] = useState('');
+  const [events, setEvents] = useState<BidActivity[]>([]);
+  const [latestWalletTxHash, setLatestWalletTxHash] = useState<
+    `0x${string}` | undefined
+  >();
+
+  const mergeEvents = (nextEvents: BidActivity[]) => {
+    setEvents((prev) => {
+      const merged = [...prev, ...nextEvents];
+      const unique = new Map<string, BidActivity>();
+      for (const event of merged) unique.set(event.id, event);
+      return Array.from(unique.values()).slice(-10);
+    });
+  };
 
   const { data: bidCount, refetch: refetchBidCount } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
-    functionName: "bidCount",
+    functionName: 'bidCount',
   });
   const { data: ended, refetch: refetchEnded } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
-    functionName: "ended",
+    functionName: 'ended',
   });
   const { data: owner, refetch: refetchOwner } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
-    functionName: "owner",
+    functionName: 'owner',
   });
   const { data: isActive, refetch: refetchIsActive } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
-    functionName: "isActive",
+    functionName: 'isActive',
   });
 
   const bidCountLabel = String((bidCount as bigint | number | undefined) ?? 0);
   const endedValue = Boolean(ended);
   const isActiveValue = Boolean(isActive);
-  const ownerAddress = typeof owner === "string" ? owner : undefined;
+  const ownerAddress = typeof owner === 'string' ? owner : undefined;
   const isOwner = Boolean(
     address &&
     ownerAddress &&
@@ -80,17 +107,41 @@ export function useSilentBid() {
   const parsedBidAmount = parseBidAmount(bidAmount);
   const isBidAmountValid = parsedBidAmount !== null;
   const statusLabel = endedValue
-    ? "Closed"
+    ? 'Closed'
     : isActiveValue
-      ? "Active"
-      : "Expired";
-  const fhevmLabel = instance ? "Ready" : "Loading";
+      ? 'Active'
+      : 'Expired';
+  const fhevmLabel = instance ? 'Ready' : 'Loading';
   const shortAddress = address
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
-    : "";
+    : '';
   const shortContract = CONTRACT_ADDRESS
     ? `${CONTRACT_ADDRESS.slice(0, 6)}...${CONTRACT_ADDRESS.slice(-4)}`
-    : "Not configured";
+    : 'Not configured';
+  const longContract = CONTRACT_ADDRESS ?? 'Not configured';
+
+  useEffect(() => {
+    if (!address || !CONTRACT_ADDRESS || typeof window === 'undefined') {
+      setLatestWalletTxHash(undefined);
+      return;
+    }
+
+    const savedTxHash = window.localStorage.getItem(
+      getLatestTxStorageKey(CONTRACT_ADDRESS, address),
+    );
+    setLatestWalletTxHash(savedTxHash as `0x${string}` | undefined);
+  }, [address]);
+
+  useEffect(() => {
+    if (!address || !CONTRACT_ADDRESS || !txHash || typeof window === 'undefined')
+      return;
+
+    window.localStorage.setItem(
+      getLatestTxStorageKey(CONTRACT_ADDRESS, address),
+      txHash,
+    );
+    setLatestWalletTxHash(txHash);
+  }, [address, txHash]);
 
   useEffect(() => {
     if (!txConfirmed) return;
@@ -108,17 +159,80 @@ export function useSilentBid() {
     refetchIsActive,
   ]);
 
+  useEffect(() => {
+    if (!publicClient || !CONTRACT_ADDRESS) return;
+
+    let cancelled = false;
+
+    const loadHistoricalBidLogs = async () => {
+      try {
+        const latestBlock = await publicClient.getBlockNumber();
+        const chunkSize = 50_000n;
+        const historicalEvents: BidActivity[] = [];
+
+        for (
+          let fromBlock = 0n;
+          fromBlock <= latestBlock;
+          fromBlock += chunkSize + 1n
+        ) {
+          const toBlock =
+            fromBlock + chunkSize > latestBlock
+              ? latestBlock
+              : fromBlock + chunkSize;
+          const logs = await publicClient.getLogs({
+            address: CONTRACT_ADDRESS,
+            event: {
+              type: 'event',
+              name: 'BidSubmitted',
+              inputs: [
+                {
+                  indexed: true,
+                  name: 'bidder',
+                  type: 'address',
+                },
+              ],
+            },
+            fromBlock,
+            toBlock,
+          });
+
+          if (cancelled) return;
+
+          for (const log of logs) {
+            historicalEvents.push({
+              id: `${log.transactionHash}-${log.logIndex}`,
+              bidder: log.args.bidder || 'unknown',
+              txHash: log.transactionHash ?? undefined,
+            });
+          }
+        }
+
+        if (historicalEvents.length === 0) return;
+
+        mergeEvents(historicalEvents.slice(-10));
+      } catch (err) {
+        console.warn('Failed to load historical bid logs', err);
+      }
+    };
+
+    void loadHistoricalBidLogs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [publicClient]);
+
   useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi: ABI,
-    eventName: "BidSubmitted",
+    eventName: 'BidSubmitted',
     onLogs(logs) {
-      for (const log of logs) {
-        const bidder = (log as any).args?.bidder || "unknown";
-        setEvents((prev) =>
-          [...prev, `Bid from ${bidder.slice(0, 8)}...`].slice(-10),
-        );
-      }
+      const nextEvents = logs.map((log) => ({
+        id: `${log.transactionHash}-${log.logIndex}`,
+        bidder: (log as any).args?.bidder || 'unknown',
+        txHash: log.transactionHash ?? undefined,
+      }));
+      mergeEvents(nextEvents);
     },
   });
 
@@ -127,12 +241,12 @@ export function useSilentBid() {
     (async () => {
       try {
         if (!window.ethereum) {
-          setStatus("FHEVM: wallet provider unavailable");
+          setStatus('FHEVM: wallet provider unavailable');
           return;
         }
 
         const chainId = await window.ethereum.request({
-          method: "eth_chainId",
+          method: 'eth_chainId',
         });
         const numericChainId = parseInt(String(chainId), 16);
         const cfg = FHEVM_CONFIG[numericChainId as keyof typeof FHEVM_CONFIG];
@@ -141,7 +255,7 @@ export function useSilentBid() {
           return;
         }
 
-        setStatus("Loading FHEVM SDK...");
+        setStatus('Loading FHEVM SDK...');
         await initSDK();
 
         const inst = await createInstance({
@@ -149,7 +263,7 @@ export function useSilentBid() {
           ...cfg,
         });
         setInstance(inst);
-        setStatus("FHEVM ready");
+        setStatus('FHEVM ready');
       } catch (err: any) {
         setStatus(`FHEVM: ${err.message}`);
       }
@@ -159,18 +273,18 @@ export function useSilentBid() {
   const handleBid = async () => {
     if (!instance || !address || parsedBidAmount === null) return;
     try {
-      setStatus("Encrypting bid...");
+      setStatus('Encrypting bid...');
       const input = instance.createEncryptedInput(CONTRACT_ADDRESS, address);
       input.add32(parsedBidAmount);
       const { handles, inputProof } = await input.encrypt();
       const encryptedBidHandle = toHex(handles[0]);
       const inputProofHex = toHex(inputProof);
 
-      setStatus("Waiting for wallet confirmation...");
+      setStatus('Waiting for wallet confirmation...');
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: ABI,
-        functionName: "bid",
+        functionName: 'bid',
         args: [encryptedBidHandle, inputProofHex],
       });
       setStatus(`Encrypted bid submitted: ${hash.slice(0, 10)}...`);
@@ -182,11 +296,11 @@ export function useSilentBid() {
   const handleBidTrivial = async () => {
     if (parsedBidAmount === null) return;
     try {
-      setStatus("Waiting for wallet confirmation...");
+      setStatus('Waiting for wallet confirmation...');
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: ABI,
-        functionName: "bidTrivial",
+        functionName: 'bidTrivial',
         args: [parsedBidAmount],
       });
       setStatus(`Trivial bid submitted: ${hash.slice(0, 10)}...`);
@@ -197,11 +311,11 @@ export function useSilentBid() {
 
   const handleEndAuction = async () => {
     try {
-      setStatus("Waiting for wallet confirmation...");
+      setStatus('Waiting for wallet confirmation...');
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: ABI,
-        functionName: "endAuction",
+        functionName: 'endAuction',
       });
       setStatus(`End auction submitted: ${hash.slice(0, 10)}...`);
     } catch (err: any) {
@@ -212,11 +326,11 @@ export function useSilentBid() {
   const handleRestartAuction = async () => {
     try {
       const ONE_HOUR = 3600;
-      setStatus("Waiting for wallet confirmation...");
+      setStatus('Waiting for wallet confirmation...');
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: ABI,
-        functionName: "restartAuction",
+        functionName: 'restartAuction',
         args: [ONE_HOUR],
       });
       setStatus(`Auction restarted: ${hash.slice(0, 10)}...`);
@@ -250,6 +364,8 @@ export function useSilentBid() {
     status,
     shortAddress,
     shortContract,
+    longContract,
+    latestWalletTxHash,
     events,
     // actions
     handleBid,
